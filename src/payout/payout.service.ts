@@ -1,0 +1,293 @@
+import {
+  BadRequestException,
+  ConflictException,
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+  UnprocessableEntityException,
+} from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Payout } from './entities/payout.entity';
+import {
+  FindOptionsOrder,
+  FindOptionsOrderValue,
+  FindOptionsWhere,
+  Repository,
+} from 'typeorm';
+import { DeliveryService } from 'src/delivery/delivery.service';
+import { setDecimalPlaces } from 'src/common/utils/set-decimal-places';
+import { VoucherService } from 'src/voucher/voucher.service';
+import { User } from 'src/user/entities/user.entity';
+import { weekDays } from 'src/common/enums/weekDays.enum';
+import voucherRelations from '../voucher/data/relations/voucher';
+import { Role } from 'src/common/role/roles.enum';
+import { Voucher } from 'src/voucher/enums/voucher.enum';
+import { WorkTimeDateService } from 'src/place/services/work-time-date.service';
+import { DeliveryManService } from 'src/user/services/delivery-man.service';
+import { full as mtbFull } from 'src/user/data/relations/delivery-man';
+import { getUnixTime } from 'date-fns';
+import { ResponsePreviewPayout } from './types/response-preview-payout.type';
+
+@Injectable()
+export class PayoutService {
+  constructor(
+    @InjectRepository(Payout)
+    private readonly payoutRepository: Repository<Payout>,
+    private readonly deliveryService: DeliveryService,
+    private readonly deliveryManService: DeliveryManService,
+    private readonly voucherService: VoucherService,
+    private readonly workTimeDateService: WorkTimeDateService,
+  ) {}
+
+  async preview(
+    userData: FindOptionsWhere<User>,
+    from: Date,
+    to: Date,
+  ): Promise<ResponsePreviewPayout> {
+    const motoboy = await this.deliveryManService.findOneByOrFail(
+      { user: userData },
+      true,
+    );
+    const vouchers = await this.voucherService.findAll({
+      from,
+      to,
+      type: Voucher.DeliveryMan,
+      userData,
+    });
+
+    const deliveries = await this.deliveryService.findAll({
+      from,
+      to,
+      type: Role.Motoboy,
+      userData,
+    });
+
+    const motoboyTips = deliveries.reduce((prev, item) => {
+      if (item.tip !== null) {
+        // eslint-disable-next-line no-useless-assignment
+        return (prev += item.tip.amount);
+      }
+      return prev;
+    }, 0);
+
+    const payout = {
+      weekDay: weekDays[from.getDay()],
+      workDay: from,
+      totalDeliveries: 0,
+      quantityDeliveries: deliveries.length,
+      motoboyDaily: 0,
+      motoboyTips,
+      subtotal: 0,
+      totalSpending: 0,
+      total: 0,
+      motoboy,
+      vouchers,
+    };
+
+    if (deliveries.length > 1) {
+      payout.totalDeliveries = await this.deliveryService.sumDeliveryTaxCol({
+        userData,
+        from,
+        to,
+      });
+    } else if (deliveries.length === 1) {
+      const [delivery] = deliveries;
+
+      payout.totalDeliveries = delivery.deliveryTax;
+    }
+
+    payout.motoboyDaily = motoboy.daily;
+    payout.subtotal = setDecimalPlaces(
+      payout.motoboyDaily + payout.totalDeliveries + payout.motoboyTips,
+      2,
+    );
+
+    payout.totalSpending = await this.voucherService.sum({
+      from,
+      to,
+      type: Voucher.DeliveryMan,
+      userData,
+    });
+
+    payout.total = setDecimalPlaces(payout.subtotal - payout.totalSpending, 2);
+
+    const lastPayouts = await this.findAll({
+      isClosed: true,
+      motoboy: { user: userData },
+    });
+
+    if (lastPayouts.length === 0) {
+      return payout;
+    }
+
+    const lastPayout = lastPayouts[0];
+
+    if (from.valueOf() <= lastPayout.workDay.valueOf()) {
+      return payout;
+    }
+
+    if (lastPayout.total < 0) {
+      payout.total = setDecimalPlaces(payout.total + lastPayout.total, 2);
+    }
+
+    return payout;
+  }
+
+  async create(payoutData: ResponsePreviewPayout, placeCode: string) {
+    const exists = await this.findOneByWorkDayAndMotoboy({
+      workDay: payoutData.workDay,
+      motoboy: { user: { id: payoutData.motoboy.user.id } },
+    });
+
+    if (exists) {
+      const motoboyName = exists.motoboy.user.name;
+
+      throw new ConflictException(
+        `Já existe um pagamento lançado para esse dia.\nMotoboy: ${motoboyName}`,
+      );
+    }
+
+    const created = await this.save({ ...payoutData, placeCode });
+
+    return this.findOneByOrFail({ id: created.id });
+  }
+
+  async update(id: string, toDate: string) {
+    const payout = await this.findOneByOrFail({ id });
+
+    if (payout.isClosed) {
+      throw new UnauthorizedException(
+        'Não é possível alterar um pagamento fechado',
+      );
+    }
+
+    const {
+      motoboy: { user },
+      workDay: initDate,
+    } = payout;
+
+    if (!user) {
+      throw new UnprocessableEntityException(
+        'A entidade Motoboy não possui um usuário válido',
+      );
+    }
+
+    const { endDate: to } = await this.workTimeDateService.create(
+      { id: user.id },
+      new Date(0).toISOString(),
+      toDate,
+    );
+
+    if (getUnixTime(initDate) > getUnixTime(to)) {
+      throw new BadRequestException(
+        'A data final não pode ser maior do que a data inicial',
+      );
+    }
+
+    const newPayout = await this.preview({ id: user.id }, initDate, to);
+    const mergedPayout = {
+      ...payout,
+      ...newPayout,
+    };
+    const updated = await this.save(mergedPayout);
+
+    return this.findOneByOrFail({ id: updated.id });
+  }
+
+  async updateIsClosed(id: string, flag: boolean) {
+    const payout = await this.findOneByOrFail({ id });
+
+    payout.isClosed = flag;
+
+    const updated = await this.save(payout);
+
+    return this.findOneByOrFail({ id: updated.id });
+  }
+
+  async updatePlaceCode(id: string, placeCode: string) {
+    const payout = await this.findOneByOrFail({ id });
+    if (payout.isClosed) {
+      throw new UnauthorizedException(
+        'Não é possível atualizar um caixa fechado',
+      );
+    }
+    payout.placeCode = placeCode ?? payout.placeCode;
+    const updated = await this.save(payout);
+    return this.findOneByOrFail({ id: updated.id });
+  }
+
+  async findOneByOrFail(payoutData: FindOptionsWhere<Payout>) {
+    const payout = await this.findOneBy(payoutData);
+
+    if (!payout) {
+      throw new NotFoundException('Pagamento não encontrado');
+    }
+
+    return payout;
+  }
+
+  findOneBy(payoutData: FindOptionsWhere<Payout>) {
+    return this.payoutRepository.findOne({
+      where: payoutData,
+      relations: {
+        motoboy: mtbFull,
+        vouchers: voucherRelations,
+      },
+    });
+  }
+
+  findOneByWorkDayAndMotoboy({ workDay, motoboy }: FindOptionsWhere<Payout>) {
+    return this.payoutRepository.findOne({
+      where: {
+        workDay,
+        motoboy,
+      },
+      relations: { motoboy: mtbFull },
+    });
+  }
+
+  findAllOwned(
+    user: User,
+    orderParams?: {
+      [K in keyof FindOptionsOrder<Payout>]: FindOptionsOrderValue;
+    },
+  ) {
+    return this.payoutRepository.find({
+      where: {
+        motoboy: { user: { id: user.id } },
+      },
+      order: orderParams,
+      relations: { motoboy: mtbFull },
+    });
+  }
+
+  findAll(
+    queryParams: FindOptionsWhere<Payout>,
+    orderParams?: {
+      [K in keyof FindOptionsOrder<Payout>]: FindOptionsOrderValue;
+    },
+  ) {
+    return this.payoutRepository.find({
+      where: queryParams,
+      order: orderParams,
+      relations: { motoboy: mtbFull },
+    });
+  }
+
+  async remove(id: string) {
+    const payout = await this.findOneByOrFail({ id });
+
+    if (payout.isClosed) {
+      throw new UnauthorizedException(
+        'Não é possível remover um pagamento fechado',
+      );
+    }
+
+    await this.payoutRepository.delete({ id });
+    return payout;
+  }
+
+  async save(payout: Partial<Payout>) {
+    return this.payoutRepository.save(payout);
+  }
+}

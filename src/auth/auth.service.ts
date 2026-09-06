@@ -1,0 +1,49 @@
+import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
+import { HashingService } from 'src/common/hashing/hashing.service';
+import { UserService } from 'src/user/services/user.service';
+import { LoginDto } from './dto/login.dto';
+import { JwtPayload } from './types/jwt-payload.type';
+
+@Injectable()
+export class AuthService {
+  constructor(
+    private readonly userService: UserService,
+    private readonly hashingService: HashingService,
+    private readonly jwtService: JwtService,
+  ) {}
+
+  async login(dto: LoginDto) {
+    const email = dto['email'];
+    const nickname = dto['nickname'];
+    const phone = dto['phone'];
+
+    const user = await this.userService.findOneBy({ email, nickname, phone });
+    const error = new UnauthorizedException('Informações inválidas');
+
+    if (!user) {
+      throw error;
+    }
+
+    const validPassword = await this.hashingService.compare(
+      dto.password,
+      user.password,
+    );
+
+    if (!validPassword) {
+      throw error;
+    }
+
+    const jwtPayload: JwtPayload = {
+      sub: user.id,
+      roles: user.roles.map(r => `${r.name}`),
+    };
+    const accessToken = await this.jwtService.signAsync(jwtPayload);
+
+    user.forceLogout = false;
+
+    await this.userService.save(user);
+
+    return { accessToken };
+  }
+}

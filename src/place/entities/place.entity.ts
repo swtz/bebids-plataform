@@ -1,0 +1,79 @@
+import { Address } from 'src/address/entities/address.entity';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  JoinTable,
+  ManyToMany,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from 'typeorm';
+import { User } from 'src/user/entities/user.entity';
+import { WorkTime } from 'src/work-time/entities/work-time.entity';
+
+@Entity()
+export class Place {
+  @PrimaryGeneratedColumn('uuid')
+  id!: string;
+
+  @CreateDateColumn()
+  createdAt!: Date;
+
+  @UpdateDateColumn()
+  updatedAt!: Date;
+
+  @Column({ unique: true })
+  code!: string;
+
+  @Column({ unique: true })
+  name!: string;
+
+  @Column({ unique: true })
+  businessName!: string;
+
+  @Column({ unique: true })
+  cnpj!: string;
+
+  @Column({ type: 'varchar', unique: true, nullable: true })
+  cpf!: string | null;
+
+  @Column({ unique: true })
+  phone!: string;
+
+  @Column({ type: 'varchar', unique: true, nullable: true })
+  secondPhone!: string | null;
+
+  @Column({ unique: true })
+  email!: string;
+
+  @ManyToMany(() => User, {
+    cascade: true,
+    onDelete: 'CASCADE',
+    onUpdate: 'CASCADE',
+  })
+  @JoinTable()
+  owners!: User[];
+
+  @ManyToOne(() => Address, {
+    onDelete: 'RESTRICT',
+    onUpdate: 'RESTRICT',
+    nullable: false,
+  })
+  address!: Address;
+
+  @ManyToOne(() => Address, {
+    onDelete: 'RESTRICT',
+    onUpdate: 'RESTRICT',
+    nullable: false,
+  })
+  postalBox!: Address;
+
+  @ManyToMany(() => WorkTime, workTime => workTime.places, {
+    cascade: true,
+    onDelete: 'CASCADE',
+    onUpdate: 'CASCADE',
+  })
+  @JoinTable()
+  workTimes!: WorkTime[];
+}

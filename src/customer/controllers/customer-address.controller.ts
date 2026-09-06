@@ -1,0 +1,128 @@
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  ParseUUIDPipe,
+  Patch,
+  Post,
+  Query,
+} from '@nestjs/common';
+import { CustomerService } from '../services/customer.service';
+import { ResponseAddressDto } from 'src/address/dto/response-address.dto';
+import { CreateAddressDto } from 'src/address/dto/create-address.dto';
+import { ResponseCustomerDto } from '../dto/response-customer.dto';
+import { CreateCustomerDto } from '../dto/create-customer.dto';
+import { CustomerAddressService } from '../services/customer-address.service';
+import { UpdateCustomerDto } from '../dto/update-customer.dto';
+import { CustomerFieldsValidationService } from '../services/customer-fields-validation.service';
+import { ParseBrPhonePipe } from 'src/user/pipes/format-br-phone.pipe';
+import { Roles } from 'src/common/role/decorators/roles.decorator';
+import { Role } from 'src/common/role/roles.enum';
+import { validateFindOneParamsOrFail } from 'src/common/utils/validate-find-one-params-or-fail';
+import { Customer } from '../entities/customer.entity';
+import { formatPhone } from 'src/common/utils/format-phone';
+import { ParseEmailPipe } from 'src/user/pipes/format-email.pipe';
+
+@Roles(Role.Admin, Role.Operator)
+@Controller('customer')
+export class CustomerAddressController {
+  constructor(
+    private readonly customerService: CustomerService,
+    private readonly customerAddressService: CustomerAddressService,
+    private readonly customerFieldsValidationService: CustomerFieldsValidationService,
+  ) {}
+
+  @Post()
+  async create(
+    @Body('customer') customerDto: CreateCustomerDto,
+    @Body('address') addressDto: CreateAddressDto,
+  ) {
+    const { phone, secondPhone } = customerDto;
+    await this.customerFieldsValidationService.validateUniqueFields({
+      ...customerDto,
+      phone: formatPhone(phone),
+      secondPhone: secondPhone ? formatPhone(secondPhone) : undefined,
+    });
+    const customerWithAddress = await this.customerAddressService.create(
+      customerDto,
+      addressDto,
+    );
+    return new ResponseCustomerDto(customerWithAddress);
+  }
+
+  @Patch(':id')
+  async update(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body('phone', ParseBrPhonePipe) phone: string,
+    @Body('secondPhone', ParseBrPhonePipe) secondPhone: string,
+    @Body() dto: UpdateCustomerDto,
+  ) {
+    await this.customerFieldsValidationService.validateUniqueFields({
+      ...dto,
+      phone,
+      secondPhone,
+    });
+    const customer = await this.customerService.update(dto, id);
+    return new ResponseCustomerDto(customer);
+  }
+
+  @Get()
+  async findAll() {
+    const customers = await this.customerService.findAll();
+    const parsedCustomers = customers.map(
+      customer => new ResponseCustomerDto(customer),
+    );
+    return parsedCustomers;
+  }
+
+  @Get('find')
+  async findOneBy(
+    @Query('id', new ParseUUIDPipe({ optional: true })) id: string,
+    @Query('nickname') nickname: string,
+    @Query('name') name: string,
+    @Query('lastName') lastName: string,
+    @Query('email', ParseEmailPipe) email: string,
+    @Query('phone', ParseBrPhonePipe) phone: string,
+    @Query('secondPhone', ParseBrPhonePipe) secondPhone: string,
+  ) {
+    const customerData = {
+      id,
+      nickname,
+      name,
+      lastName,
+      email,
+      phone,
+      secondPhone,
+    };
+
+    validateFindOneParamsOrFail<Customer>(customerData);
+
+    const customer = await this.customerService.findOneByOrFail(customerData);
+
+    return new ResponseCustomerDto(customer);
+  }
+
+  @Roles(Role.Admin)
+  @Delete(':id')
+  async remove(@Param('id', ParseUUIDPipe) id: string) {
+    const customer = await this.customerService.remove(id);
+    return new ResponseCustomerDto(customer);
+  }
+
+  @Post(':id/address')
+  async addAddress(
+    @Body() dto: CreateAddressDto,
+    @Param('id', ParseUUIDPipe) id: string,
+  ) {
+    const customer = await this.customerAddressService.addAddress(dto, id);
+    return new ResponseCustomerDto(customer);
+  }
+
+  @Delete('address/:id')
+  async removeAddress(@Param('id', ParseUUIDPipe) id: string) {
+    const address = await this.customerAddressService.removeAddress(id);
+    return new ResponseAddressDto(address);
+  }
+}

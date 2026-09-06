@@ -1,0 +1,191 @@
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  ParseBoolPipe,
+  ParseEnumPipe,
+  ParseUUIDPipe,
+  Patch,
+  Post,
+  Query,
+  Req,
+} from '@nestjs/common';
+import { PayoutService } from './payout.service';
+import { ResponsePayoutDto } from './dto/response-payout.dto';
+import { Roles } from 'src/common/role/decorators/roles.decorator';
+import { Role } from 'src/common/role/roles.enum';
+import { WeekDay } from 'src/common/enums/weekDays.enum';
+import { AuthenticatedRequest } from 'src/auth/types/authenticated-request.type';
+import { ParseBrPhonePipe } from 'src/user/pipes/format-br-phone.pipe';
+import { WorkTimeDateService } from 'src/place/services/work-time-date.service';
+import { ParseTimezoneDatePipe } from 'src/delivery/pipes/parse-timezone-date.pipe';
+import { validateFindOneParamsOrFail } from 'src/common/utils/validate-find-one-params-or-fail';
+import { User } from 'src/user/entities/user.entity';
+import { ParseEmailPipe } from 'src/user/pipes/format-email.pipe';
+import { CreatePayoutDto } from './dto/create-payout-dto';
+import { ParsePlaceCodePipe } from 'src/place/pipes/parse-place-code.pipe';
+import { FindOptionsOrder, FindOptionsOrderValue } from 'typeorm';
+import { Payout } from './entities/payout.entity';
+import {
+  CommonType,
+  ParseOrderParamsPipe,
+} from 'src/delivery/pipes/parse-order-params.pipe';
+import { payoutOrderMap } from 'src/common/data/entity-instructions/ordering';
+
+@Roles(Role.Admin, Role.Operator, Role.Motoboy)
+@Controller('payout')
+export class PayoutController {
+  constructor(
+    private readonly payoutService: PayoutService,
+    private readonly workTimeDateService: WorkTimeDateService,
+  ) {}
+
+  @Get('preview')
+  async preview(
+    @Query('nickname') nickname: string,
+    @Query('id', new ParseUUIDPipe({ optional: true })) id: string,
+    @Query('name') name: string,
+    @Query('lastName') lastName: string,
+    @Query('email', ParseEmailPipe) email: string,
+    @Query('phone', ParseBrPhonePipe) phone: string,
+    @Query('secondPhone', ParseBrPhonePipe) secondPhone: string,
+    @Query('from') fromDate: string,
+    @Query('to') toDate: string,
+  ) {
+    const userData = {
+      nickname,
+      id,
+      name,
+      lastName,
+      email,
+      phone,
+      secondPhone,
+    };
+    validateFindOneParamsOrFail<User>(userData);
+    const { initDate: from, endDate: to } =
+      await this.workTimeDateService.create(userData, fromDate, toDate);
+    const payout = await this.payoutService.preview(userData, from, to);
+    return new ResponsePayoutDto(payout);
+  }
+
+  @Roles(Role.Admin, Role.Operator)
+  @Post()
+  async create(
+    @Body(ParsePlaceCodePipe)
+    { user: userData, from: fromDate, to: toDate, placeCode }: CreatePayoutDto,
+  ) {
+    validateFindOneParamsOrFail<Partial<User>>(userData);
+    const { initDate: from, endDate: to } =
+      await this.workTimeDateService.create(userData, fromDate, toDate);
+
+    const preview = await this.payoutService.preview(userData, from, to);
+    const payout = await this.payoutService.create(preview, placeCode);
+
+    return new ResponsePayoutDto(payout);
+  }
+
+  @Roles(Role.Motoboy)
+  @Get('me')
+  async findAllOwned(
+    @Req() req: AuthenticatedRequest,
+    @Query(new ParseOrderParamsPipe<CommonType<Payout>>(payoutOrderMap))
+    orderParams: {
+      [K in keyof FindOptionsOrder<Payout>]: FindOptionsOrderValue;
+    },
+  ) {
+    const payouts = await this.payoutService.findAllOwned(
+      req.user,
+      orderParams,
+    );
+    const parsedPayouts = payouts.map(item => new ResponsePayoutDto(item));
+    return parsedPayouts;
+  }
+
+  @Get(':id')
+  async findOne(@Param('id', ParseUUIDPipe) id: string) {
+    const payout = await this.payoutService.findOneByOrFail({ id });
+    return new ResponsePayoutDto(payout);
+  }
+
+  @Get()
+  async findAll(
+    @Query('weekDay', new ParseEnumPipe(WeekDay, { optional: true }))
+    weekDay: WeekDay,
+    @Query('workDay', ParseTimezoneDatePipe) workDay: Date,
+    @Query('isClosed', new ParseBoolPipe({ optional: true })) isClosed: boolean,
+    @Query('nickname') nickname: string,
+    @Query('id', new ParseUUIDPipe({ optional: true })) id: string,
+    @Query('name') name: string,
+    @Query('lastName') lastName: string,
+    @Query('email', ParseEmailPipe) email: string,
+    @Query('phone', ParseBrPhonePipe) phone: string,
+    @Query('secondPhone', ParseBrPhonePipe) secondPhone: string,
+    @Query('placeCode', ParsePlaceCodePipe) placeCode: string,
+    @Query(new ParseOrderParamsPipe<CommonType<Payout>>(payoutOrderMap))
+    orderParams: {
+      [K in keyof FindOptionsOrder<Payout>]: FindOptionsOrderValue;
+    },
+  ) {
+    const payouts = await this.payoutService.findAll(
+      {
+        weekDay,
+        workDay,
+        motoboy: {
+          user: {
+            nickname,
+            id,
+            name,
+            lastName,
+            email,
+            phone,
+            secondPhone,
+          },
+        },
+        isClosed,
+        placeCode,
+      },
+      orderParams,
+    );
+    const parsedPayouts = payouts.map(payout => new ResponsePayoutDto(payout));
+    return parsedPayouts;
+  }
+
+  @Roles(Role.Admin, Role.Operator)
+  @Patch(':id')
+  async update(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Query('to') toDate: string,
+  ) {
+    const payout = await this.payoutService.update(id, toDate);
+    return new ResponsePayoutDto(payout);
+  }
+
+  @Roles(Role.Admin)
+  @Patch(':id/code')
+  async updatePlaceCode(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body('placeCode', ParsePlaceCodePipe) placeCode: string,
+  ) {
+    const payout = await this.payoutService.updatePlaceCode(id, placeCode);
+    return new ResponsePayoutDto(payout);
+  }
+
+  @Roles(Role.Admin)
+  @Patch(':id/:flag')
+  async updateIsClosed(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Param('flag', ParseBoolPipe) flag: boolean,
+  ) {
+    const payout = await this.payoutService.updateIsClosed(id, flag);
+    return new ResponsePayoutDto(payout);
+  }
+
+  @Roles(Role.Admin, Role.Operator)
+  @Delete(':id')
+  async remove(@Param('id', ParseUUIDPipe) id: string) {
+    const payout = await this.payoutService.remove(id);
+    return new ResponsePayoutDto(payout);
+  }
+}

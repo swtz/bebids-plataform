@@ -1,0 +1,166 @@
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  ParseBoolPipe,
+  ParseEnumPipe,
+  ParseUUIDPipe,
+  Patch,
+  Post,
+  Query,
+  Req,
+} from '@nestjs/common';
+import { DeliveryService } from './delivery.service';
+import { AuthenticatedRequest } from 'src/auth/types/authenticated-request.type';
+import { CreateDeliveryDto } from './dto/create-delivery.dto';
+import { Roles } from 'src/common/role/decorators/roles.decorator';
+import { Role } from 'src/common/role/roles.enum';
+import { UpdateDeliveryDto } from './dto/update-delivery.dto';
+import { ResponseDeliveryDto } from './dto/response-delivery.dto';
+import { PaymentMethod } from './enums/payment-methods.enum';
+import { ParseBrPhonePipe } from 'src/user/pipes/format-br-phone.pipe';
+import { WorkTimeDateService } from 'src/place/services/work-time-date.service';
+import { ParseEmailPipe } from 'src/user/pipes/format-email.pipe';
+import { ParsePlaceCodePipe } from 'src/place/pipes/parse-place-code.pipe';
+import {
+  CommonType,
+  ParseOrderParamsPipe,
+} from './pipes/parse-order-params.pipe';
+import { deliveryOrderMap } from 'src/common/data/entity-instructions/ordering';
+import { FindOptionsOrder, FindOptionsOrderValue } from 'typeorm';
+import { Delivery } from './entities/delivery.entity';
+
+@Roles(Role.Admin, Role.Operator)
+@Controller('delivery')
+export class DeliveryController {
+  constructor(
+    private readonly deliveryService: DeliveryService,
+    private readonly workTimeDateService: WorkTimeDateService,
+  ) {}
+
+  @Post('me')
+  async create(
+    @Req() req: AuthenticatedRequest,
+    @Body() dto: CreateDeliveryDto,
+    @Body('placeCode', ParsePlaceCodePipe) placeCode: string,
+  ) {
+    const delivery = await this.deliveryService.create(
+      { ...dto, placeCode },
+      req.user,
+    );
+    return new ResponseDeliveryDto(delivery);
+  }
+
+  @Patch('me/:id')
+  async update(
+    @Req() req: AuthenticatedRequest,
+    @Body() dto: UpdateDeliveryDto,
+    @Body('placeCode', ParsePlaceCodePipe) placeCode: string,
+    @Param('id', ParseUUIDPipe) id: string,
+  ) {
+    const delivery = await this.deliveryService.update(
+      { ...dto, placeCode },
+      req.user,
+      id,
+    );
+    return new ResponseDeliveryDto(delivery);
+  }
+
+  @Delete('me/:id')
+  async remove(
+    @Req() req: AuthenticatedRequest,
+    @Param('id', ParseUUIDPipe) id: string,
+  ) {
+    const delivery = await this.deliveryService.remove(req.user, id);
+    return new ResponseDeliveryDto(delivery);
+  }
+
+  @Roles(Role.Operator, Role.Motoboy, Role.Admin)
+  @Get()
+  async findAll(
+    @Query('type', new ParseEnumPipe(Role, { optional: true })) type: Role,
+    @Query('nickname') nickname: string,
+    @Query('id', new ParseUUIDPipe({ optional: true })) id: string,
+    @Query('name') name: string,
+    @Query('lastName') lastName: string,
+    @Query('email', ParseEmailPipe) email: string,
+    @Query('phone', ParseBrPhonePipe) phone: string,
+    @Query('secondPhone', ParseBrPhonePipe) secondPhone: string,
+    @Query('placeCode', ParsePlaceCodePipe) placeCode: string,
+    @Query('motorcycleLicensePlate') motorcycleLicensePlate: string,
+    @Query('from') fromDate: string,
+    @Query('to') toDate: string,
+    @Query(
+      'paymentMethod',
+      new ParseEnumPipe(PaymentMethod, { optional: true }),
+    )
+    paymentMethod: PaymentMethod,
+    @Query('isPaid', new ParseBoolPipe({ optional: true })) isPaid: boolean,
+    @Query(new ParseOrderParamsPipe<CommonType<Delivery>>(deliveryOrderMap))
+    orderParams: {
+      [K in keyof FindOptionsOrder<Delivery>]: FindOptionsOrderValue;
+    },
+  ) {
+    const userData = {
+      nickname,
+      id,
+      name,
+      lastName,
+      email,
+      phone,
+      secondPhone,
+      placeCode: type === undefined ? undefined : placeCode,
+    };
+    const dateObject: {
+      initDate?: Date;
+      endDate?: Date;
+    } = { initDate: undefined, endDate: undefined };
+
+    if (fromDate && toDate) {
+      const { initDate, endDate } = await this.workTimeDateService.create(
+        userData,
+        fromDate,
+        toDate,
+      );
+
+      dateObject.initDate = initDate;
+      dateObject.endDate = endDate;
+    }
+
+    const deliveries = await this.deliveryService.findAll(
+      {
+        type,
+        userData,
+        isPaid,
+        paymentMethod,
+        placeCode,
+        motorcycleLicensePlate: motorcycleLicensePlate,
+        from: dateObject.initDate,
+        to: dateObject.endDate,
+      },
+      orderParams,
+    );
+    const parsedDeliveries = deliveries.map(
+      delivery => new ResponseDeliveryDto(delivery),
+    );
+    return parsedDeliveries;
+  }
+
+  @Roles(Role.Admin, Role.Operator, Role.Motoboy)
+  @Get('me')
+  async findAllOwned(@Req() req: AuthenticatedRequest) {
+    const deliveries = await this.deliveryService.findAllOwned(req.user);
+    const parsedDeliveries = deliveries.map(
+      delivery => new ResponseDeliveryDto(delivery),
+    );
+    return parsedDeliveries;
+  }
+
+  @Get(':id')
+  async findOne(@Param('id', ParseUUIDPipe) id: string) {
+    const delivery = await this.deliveryService.findOneByOrFail({ id });
+    return new ResponseDeliveryDto(delivery);
+  }
+}
