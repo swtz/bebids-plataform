@@ -1,8 +1,8 @@
-import { Injectable } from "@nestjs/common";
-import { CreateCustomerDto } from "../dto/create-customer.dto";
-import { UpdateCustomerDto } from "../dto/update-customer.dto";
-import { CustomerValidators } from "../types/customer-validator.type";
-import { CustomerService } from "../services/customer.service";
+import { Injectable } from '@nestjs/common';
+import { CreateCustomerDto } from '../dto/create-customer.dto';
+import { UpdateCustomerDto } from '../dto/update-customer.dto';
+import { CustomerValidators } from '../types/customer-validator.type';
+import { CustomerService } from '../services/customer.service';
 
 @Injectable()
 export class CustomerFieldsValidationService {

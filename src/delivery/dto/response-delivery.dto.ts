@@ -1,10 +1,10 @@
-import { Delivery } from "../entities/delivery.entity";
-import { ResponseAddressDto } from "src/address/dto/response-address.dto";
-import { Tip } from "src/tip/entities/tip.entity";
-import { SmallResponseCustomerType } from "src/customer/types/customer.type";
-import { SmallResponseMotorcycleDto } from "src/user/dtos/motorcycle/small-response-motorcycle.dto";
-import { MediumResponseWorkTimeDto } from "src/work-time/dto/work-time/medium-response-work-time.dto";
-import { SmallResponseUserDto } from "src/user/dtos/user/small-response-user.dto";
+import { Delivery } from '../entities/delivery.entity';
+import { ResponseAddressDto } from 'src/address/dto/response-address.dto';
+import { Tip } from 'src/tip/entities/tip.entity';
+import { SmallResponseCustomerType } from 'src/customer/types/customer.type';
+import { SmallResponseMotorcycleDto } from 'src/user/dtos/motorcycle/small-response-motorcycle.dto';
+import { MediumResponseWorkTimeDto } from 'src/work-time/dto/work-time/medium-response-work-time.dto';
+import { SmallResponseUserDto } from 'src/user/dtos/user/small-response-user.dto';
 
 export class ResponseDeliveryDto {
   readonly id: string;
@@ -18,7 +18,7 @@ export class ResponseDeliveryDto {
   readonly motorcycleLicensePlate: string;
   readonly placeCode: string;
   readonly change: number | null;
-  readonly tip: Pick<Tip, "id" | "amount"> | null;
+  readonly tip: Pick<Tip, 'id' | 'amount'> | null;
   readonly operator: SmallResponseUserDto | null;
   readonly motoboy:
     | (SmallResponseUserDto & {

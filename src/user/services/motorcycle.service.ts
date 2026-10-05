@@ -4,21 +4,21 @@ import {
   FindOptionsOrderValue,
   FindOptionsWhere,
   Repository,
-} from "typeorm";
-import { Motorcycle } from "../entities/motorcycle.entity";
-import { InjectRepository } from "@nestjs/typeorm";
+} from 'typeorm';
+import { Motorcycle } from '../entities/motorcycle.entity';
+import { InjectRepository } from '@nestjs/typeorm';
 import {
   BadRequestException,
   Injectable,
   NotFoundException,
-} from "@nestjs/common";
-import { CreateMotorcycleDto } from "../dtos/motorcycle/create-motorcycle.dto";
-import { MotorcycleType } from "../types/motorcycle.type";
-import { User } from "src/user/entities/user.entity";
-import { DeliveryMan } from "src/user/entities/delivery-man.entity";
-import { essencial, full } from "../data/relations/delivery-man";
-import { UpdateMotorcycleDto } from "../dtos/motorcycle/update-motorcycle.dto";
-import { setEntityRelationFieldAsNull } from "src/common/utils/set-entity-relation-field-as-null";
+} from '@nestjs/common';
+import { CreateMotorcycleDto } from '../dtos/motorcycle/create-motorcycle.dto';
+import { MotorcycleType } from '../types/motorcycle.type';
+import { User } from 'src/user/entities/user.entity';
+import { DeliveryMan } from 'src/user/entities/delivery-man.entity';
+import { essencial, full } from '../data/relations/delivery-man';
+import { UpdateMotorcycleDto } from '../dtos/motorcycle/update-motorcycle.dto';
+import { setEntityRelationFieldAsNull } from 'src/common/utils/set-entity-relation-field-as-null';
 
 @Injectable()
 export class MotorcycleService {
@@ -40,7 +40,7 @@ export class MotorcycleService {
     });
 
     if (exists) {
-      throw new BadRequestException("Essa placa já existe");
+      throw new BadRequestException('Essa placa já existe');
     }
   }
 
@@ -105,7 +105,7 @@ export class MotorcycleService {
     const motorcycle = await this.findOneBy(motorcycleData, relations, manager);
 
     if (!motorcycle) {
-      throw new NotFoundException("Essa moto não existe");
+      throw new NotFoundException('Essa moto não existe');
     }
 
     return motorcycle;
@@ -133,7 +133,7 @@ export class MotorcycleService {
     const motorcycle = await this.findOneByOrFail({ id }, true, manager);
     await setEntityRelationFieldAsNull<Motorcycle>(
       Motorcycle,
-      "driver",
+      'driver',
       motorcycle.id,
       repo,
     );

@@ -3,21 +3,21 @@ import {
   Injectable,
   NotFoundException,
   UnprocessableEntityException,
-} from "@nestjs/common";
+} from '@nestjs/common';
 import {
   EntityManager,
   FindOptionsOrder,
   FindOptionsOrderValue,
   FindOptionsWhere,
   Repository,
-} from "typeorm";
-import { Customer } from "../entities/customer.entity";
-import { InjectRepository } from "@nestjs/typeorm";
-import { CreateCustomerDto } from "../dto/create-customer.dto";
-import { UpdateCustomerDto } from "../dto/update-customer.dto";
-import { formatPhone } from "src/common/utils/format-phone";
-import { transformToLowerCase } from "src/common/utils/transform-to-lower-case";
-import { Service } from "src/common/protocols/service/service";
+} from 'typeorm';
+import { Customer } from '../entities/customer.entity';
+import { InjectRepository } from '@nestjs/typeorm';
+import { CreateCustomerDto } from '../dto/create-customer.dto';
+import { UpdateCustomerDto } from '../dto/update-customer.dto';
+import { formatPhone } from 'src/common/utils/format-phone';
+import { transformToLowerCase } from 'src/common/utils/transform-to-lower-case';
+import { Service } from 'src/common/protocols/service/service';
 
 @Injectable()
 export class CustomerService implements Service {
@@ -26,15 +26,15 @@ export class CustomerService implements Service {
     private readonly customerRepository: Repository<Customer>,
   ) {}
   transformDtoFields<T extends object>(dto: T): T {
-    if (typeof dto !== "object") {
-      throw new UnprocessableEntityException("Formato não permitido");
+    if (typeof dto !== 'object') {
+      throw new UnprocessableEntityException('Formato não permitido');
     }
 
     const copy = { ...dto };
     const arrayDto = Object.entries(copy);
 
     arrayDto.forEach(([k, v]) => {
-      if (typeof v === "string") {
+      if (typeof v === 'string') {
         copy[k] = transformToLowerCase(v);
       }
     });
@@ -51,7 +51,7 @@ export class CustomerService implements Service {
     const exists = await this.findByPhone(phone, isSecondPhone, manager);
 
     if (exists) {
-      throw new ConflictException("Telefone já existe");
+      throw new ConflictException('Telefone já existe');
     }
   }
 
@@ -129,7 +129,7 @@ export class CustomerService implements Service {
     const customer = await this.findOneBy(customerData, manager);
 
     if (!customer) {
-      throw new NotFoundException("Cliente não encontrado");
+      throw new NotFoundException('Cliente não encontrado');
     }
 
     return customer;

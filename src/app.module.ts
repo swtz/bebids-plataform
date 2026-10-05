@@ -1,21 +1,21 @@
-import { Module } from "@nestjs/common";
-import { AuthModule } from "./auth/auth.module";
-import { ConfigModule } from "@nestjs/config";
-import { UserModule } from "./user/user.module";
-import { TypeOrmModule } from "@nestjs/typeorm";
-import { DeliveryModule } from "./delivery/delivery.module";
-import { VoucherModule } from "./voucher/voucher.module";
-import { CustomerModule } from "./customer/customer.module";
-import { AddressModule } from "./address/address.module";
-import { PayoutModule } from "./payout/payout.module";
-import { TipModule } from "./tip/tip.module";
-import { SettlementModule } from "./settlement/settlement.module";
-import { APP_FILTER, APP_GUARD } from "@nestjs/core";
-import { AllExceptionsFilter } from "./common/filters/all-exceptions.filter";
-import { JwtAuthGuard } from "./auth/guards/jwt-auth.guard";
-import { ThrottlerGuard, ThrottlerModule } from "@nestjs/throttler";
-import { PlaceModule } from "./place/place.module";
-import { WorkTimeModule } from "./work-time/work-time.module";
+import { Module } from '@nestjs/common';
+import { AuthModule } from './auth/auth.module';
+import { ConfigModule } from '@nestjs/config';
+import { UserModule } from './user/user.module';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { DeliveryModule } from './delivery/delivery.module';
+import { VoucherModule } from './voucher/voucher.module';
+import { CustomerModule } from './customer/customer.module';
+import { AddressModule } from './address/address.module';
+import { PayoutModule } from './payout/payout.module';
+import { TipModule } from './tip/tip.module';
+import { SettlementModule } from './settlement/settlement.module';
+import { APP_FILTER, APP_GUARD } from '@nestjs/core';
+import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
+import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
+import { PlaceModule } from './place/place.module';
+import { WorkTimeModule } from './work-time/work-time.module';
 
 @Module({
   imports: [
@@ -40,14 +40,45 @@ import { WorkTimeModule } from "./work-time/work-time.module";
         },
       ],
     }),
-    TypeOrmModule.forRoot({
-      type: "postgres",
-      url: process.env.DATABASE_URL,
-      ssl: {
-        rejectUnauthorized: false,
+    TypeOrmModule.forRootAsync({
+      useFactory: () => {
+        const nodeEnv = process.env.NODE_ENV || 'development';
+
+        if (nodeEnv === 'development') {
+          if (process.env.DB_TYPE === 'better-sqlite3') {
+            return {
+              type: process.env.DB_TYPE,
+              database: process.env.DB_DATABASE || './db.sqlite',
+              synchronize: true,
+              autoLoadEntities: true,
+            };
+          }
+
+          return {
+            type: 'postgres',
+            host: process.env.DEV_DB_HOST,
+            port: parseInt(process.env.DEV_DB_PORT || '5432', 10),
+            username: process.env.DEV_DB_USERNAME,
+            password: process.env.DEV_DB_PASSWORD,
+            database: process.env.DEV_DB_DATABASE,
+            // CUIDADO COM O A CONFIGURAÇÃO ABAIXO
+            synchronize: true,
+            autoLoadEntities: true,
+            // logging: ['query', 'error'],
+          };
+        }
+
+        return {
+          type: 'postgres',
+          host: process.env.DB_HOST,
+          port: parseInt(process.env.DB_PORT || '5432', 10),
+          username: process.env.DB_USERNAME,
+          password: process.env.DB_PASSWORD,
+          database: process.env.DB_DATABASE,
+          synchronize: true,
+          autoLoadEntities: true,
+        };
       },
-      autoLoadEntities: true,
-      synchronize: true,
     }),
     PlaceModule,
     WorkTimeModule,

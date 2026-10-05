@@ -5,25 +5,25 @@ import {
   NotFoundException,
   UnauthorizedException,
   UnprocessableEntityException,
-} from "@nestjs/common";
+} from '@nestjs/common';
 import {
   FindOptionsOrder,
   Repository,
   FindOptionsOrderValue,
   FindOptionsWhere,
-} from "typeorm";
-import { Settlement } from "./entities/settlement.entity";
-import { InjectRepository } from "@nestjs/typeorm";
-import { DeliveryService } from "src/delivery/delivery.service";
-import { UserService } from "src/user/services/user.service";
-import { User } from "src/user/entities/user.entity";
-import { weekDays } from "src/common/enums/weekDays.enum";
-import { setDecimalPlaces } from "src/common/utils/set-decimal-places";
-import { PaymentMethod } from "src/delivery/enums/payment-methods.enum";
-import { Role } from "src/common/role/roles.enum";
-import { WorkTimeDateService } from "src/place/services/work-time-date.service";
-import { getUnixTime } from "date-fns";
-import { ResponsePreviewSettlement } from "./types/response-preview-settlement.type";
+} from 'typeorm';
+import { Settlement } from './entities/settlement.entity';
+import { InjectRepository } from '@nestjs/typeorm';
+import { DeliveryService } from 'src/delivery/delivery.service';
+import { UserService } from 'src/user/services/user.service';
+import { User } from 'src/user/entities/user.entity';
+import { weekDays } from 'src/common/enums/weekDays.enum';
+import { setDecimalPlaces } from 'src/common/utils/set-decimal-places';
+import { PaymentMethod } from 'src/delivery/enums/payment-methods.enum';
+import { Role } from 'src/common/role/roles.enum';
+import { WorkTimeDateService } from 'src/place/services/work-time-date.service';
+import { getUnixTime } from 'date-fns';
+import { ResponsePreviewSettlement } from './types/response-preview-settlement.type';
 
 @Injectable()
 export class SettlementService {
@@ -42,12 +42,12 @@ export class SettlementService {
   ): Promise<ResponsePreviewSettlement> {
     const operator = await this.userService.findOneByOrFail(
       userData,
-      "motoboy-essencial",
+      'motoboy-essencial',
     );
 
     if (operator.deliveryMan) {
       throw new UnprocessableEntityException(
-        "Motoboys não possuem caixa para fechar",
+        'Motoboys não possuem caixa para fechar',
       );
     }
 
@@ -61,7 +61,7 @@ export class SettlementService {
         workDay: from,
         isClosed: true,
       },
-      { createdAt: "DESC" },
+      { createdAt: 'DESC' },
     );
     const newFrom = lastClosed?.closingAt ? lastClosed.closingAt : from;
     const deliveries = await this.deliveryService.findAll({
@@ -101,13 +101,13 @@ export class SettlementService {
 
       const prefix =
         name === PaymentMethod.Credit || name === PaymentMethod.Debit
-          ? "card"
+          ? 'card'
           : name;
       return prefix;
     };
 
     function sumPaymentMethodSubtotal(
-      prefix: PaymentMethod | "card" | null | undefined,
+      prefix: PaymentMethod | 'card' | null | undefined,
       value: number,
     ) {
       if (!prefix) {
@@ -125,7 +125,7 @@ export class SettlementService {
         from: newFrom,
         to,
       });
-      deliveries.forEach((delivery) => {
+      deliveries.forEach(delivery => {
         sumPaymentMethodSubtotal(
           generatePrefix(delivery.paymentMethod?.name),
           delivery.totalPurchase,
@@ -167,7 +167,7 @@ export class SettlementService {
         workDay: settlementData.workDay,
         isClosed: true,
       },
-      { createdAt: "DESC" },
+      { createdAt: 'DESC' },
     );
 
     if (exists && !lastClosed) {
@@ -202,7 +202,7 @@ export class SettlementService {
     const settlement = await this.findOneByOrFail({ id });
 
     if (settlement.isClosed) {
-      throw new UnauthorizedException("Caixa fechado. Não é possível alterar");
+      throw new UnauthorizedException('Caixa fechado. Não é possível alterar');
     }
 
     const { workDay: initDate, operator } = settlement;
@@ -214,7 +214,7 @@ export class SettlementService {
 
     if (getUnixTime(initDate) > getUnixTime(to)) {
       throw new BadRequestException(
-        "A data inicial não pode ser maior do que a data final",
+        'A data inicial não pode ser maior do que a data final',
       );
     }
 
@@ -248,7 +248,7 @@ export class SettlementService {
     const settlement = await this.findOneByOrFail({ id });
     if (settlement.isClosed) {
       throw new UnauthorizedException(
-        "Não é possível atualizar um caixa fechado",
+        'Não é possível atualizar um caixa fechado',
       );
     }
     settlement.placeCode = placeCode ?? settlement.placeCode;
@@ -260,7 +260,7 @@ export class SettlementService {
     const settlement = await this.findOneBy(settlementData);
 
     if (!settlement) {
-      throw new NotFoundException("Caixa não encontrado");
+      throw new NotFoundException('Caixa não encontrado');
     }
 
     return settlement;
@@ -320,7 +320,7 @@ export class SettlementService {
     const settlement = await this.findOneByOrFail({ id });
 
     if (settlement.isClosed) {
-      throw new UnauthorizedException("Caixa fechado.\nNão é possível apagar");
+      throw new UnauthorizedException('Caixa fechado.\nNão é possível apagar');
     }
 
     await this.settlementRepository.delete({ id });

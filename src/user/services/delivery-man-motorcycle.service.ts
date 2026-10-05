@@ -1,14 +1,14 @@
-import { Injectable, UnprocessableEntityException } from "@nestjs/common";
-import { UserService } from "./user.service";
-import { MotorcycleService } from "./motorcycle.service";
-import { CreateUserDto } from "../dtos/user/create-user.dto";
-import { CreateMotorcycleDto } from "../dtos/motorcycle/create-motorcycle.dto";
-import { DeliveryManService } from "./delivery-man.service";
-import { CreateDeliveryManDto } from "../dtos/delivery-man/create-delivery-man.dto";
-import { DataSource } from "typeorm";
-import { UpdateMotorcycleDto } from "../dtos/motorcycle/update-motorcycle.dto";
-import { Motorcycle } from "../entities/motorcycle.entity";
-import { setEntityRelationFieldAsNull } from "src/common/utils/set-entity-relation-field-as-null";
+import { Injectable, UnprocessableEntityException } from '@nestjs/common';
+import { UserService } from './user.service';
+import { MotorcycleService } from './motorcycle.service';
+import { CreateUserDto } from '../dtos/user/create-user.dto';
+import { CreateMotorcycleDto } from '../dtos/motorcycle/create-motorcycle.dto';
+import { DeliveryManService } from './delivery-man.service';
+import { CreateDeliveryManDto } from '../dtos/delivery-man/create-delivery-man.dto';
+import { DataSource } from 'typeorm';
+import { UpdateMotorcycleDto } from '../dtos/motorcycle/update-motorcycle.dto';
+import { Motorcycle } from '../entities/motorcycle.entity';
+import { setEntityRelationFieldAsNull } from 'src/common/utils/set-entity-relation-field-as-null';
 
 @Injectable()
 export class DeliveryManMotorcycleService {
@@ -24,12 +24,12 @@ export class DeliveryManMotorcycleService {
     deliveryManDto: CreateDeliveryManDto,
     motorcycleData: CreateMotorcycleDto | string,
   ) {
-    return this.dataSource.transaction(async (manager) => {
+    return this.dataSource.transaction(async manager => {
       const isObject =
-        typeof motorcycleData === "object" && motorcycleData !== null;
+        typeof motorcycleData === 'object' && motorcycleData !== null;
       const user = await this.userService.create(userDto, manager);
       const ownerId: string | undefined = isObject
-        ? motorcycleData["owner"]
+        ? motorcycleData['owner']
         : undefined;
 
       const owner = ownerId
@@ -37,7 +37,7 @@ export class DeliveryManMotorcycleService {
         : undefined;
 
       const motorcycle =
-        typeof motorcycleData === "object" && motorcycleData !== null
+        typeof motorcycleData === 'object' && motorcycleData !== null
           ? await this.motorcycleService.create(
               motorcycleData,
               owner,
@@ -58,7 +58,7 @@ export class DeliveryManMotorcycleService {
       if (oldDeliveryMan) {
         await manager
           .createQueryBuilder()
-          .relation(Motorcycle, "driver")
+          .relation(Motorcycle, 'driver')
           .of(motorcycle.id)
           .set(null);
       }
@@ -88,7 +88,7 @@ export class DeliveryManMotorcycleService {
   }
 
   async update(id: string, motorcycleDto: UpdateMotorcycleDto, daily?: number) {
-    return this.dataSource.transaction(async (manager) => {
+    return this.dataSource.transaction(async manager => {
       const motoboy = await this.deliveryManService.findOneByOrFail(
         { user: { id } },
         false,
@@ -116,7 +116,7 @@ export class DeliveryManMotorcycleService {
   }
 
   async updateRestrictMotorcycle(id: string, dto: UpdateMotorcycleDto) {
-    return this.dataSource.transaction(async (manager) => {
+    return this.dataSource.transaction(async manager => {
       const motorcycle = await this.motorcycleService.findOneByOrFail(
         { id },
         true,
@@ -155,7 +155,7 @@ export class DeliveryManMotorcycleService {
       if (motorcycle.driver) {
         await setEntityRelationFieldAsNull<Motorcycle>(
           Motorcycle,
-          "driver",
+          'driver',
           motorcycle.id,
           manager,
         );

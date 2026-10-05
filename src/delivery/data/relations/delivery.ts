@@ -1,4 +1,4 @@
-import { full } from "src/user/data/relations/delivery-man";
+import { full } from 'src/user/data/relations/delivery-man';
 
 export default {
   operator: true,

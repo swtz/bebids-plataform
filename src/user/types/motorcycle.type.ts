@@ -1,7 +1,7 @@
-import { Motorcycle } from "../entities/motorcycle.entity";
-import { User } from "src/user/entities/user.entity";
-import { DeliveryMan } from "src/user/entities/delivery-man.entity";
-import { ResponseMotorcycleDto } from "../dtos/motorcycle/response-motorcycle.dto";
+import { Motorcycle } from '../entities/motorcycle.entity';
+import { User } from 'src/user/entities/user.entity';
+import { DeliveryMan } from 'src/user/entities/delivery-man.entity';
+import { ResponseMotorcycleDto } from '../dtos/motorcycle/response-motorcycle.dto';
 
 type MotorcycleOptionalFieldsType = {
   displacement?: string;
@@ -12,17 +12,17 @@ type MotorcycleOptionalFieldsType = {
 
 export type MotorcycleType = Omit<
   Motorcycle,
-  | "id"
-  | "createdAt"
-  | "updatedAt"
-  | "displacement"
-  | "placeCode"
-  | "owner"
-  | "driver"
+  | 'id'
+  | 'createdAt'
+  | 'updatedAt'
+  | 'displacement'
+  | 'placeCode'
+  | 'owner'
+  | 'driver'
 > &
   MotorcycleOptionalFieldsType;
 
 export type SmallResponseMotorcycle = Pick<
   ResponseMotorcycleDto,
-  "id" | "brand" | "color" | "licensePlate"
+  'id' | 'brand' | 'color' | 'licensePlate'
 >;

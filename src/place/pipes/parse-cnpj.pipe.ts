@@ -3,12 +3,12 @@ import {
   BadRequestException,
   Injectable,
   PipeTransform,
-} from "@nestjs/common";
-import { formatCnpj, validateCnpj } from "src/common/utils/format-cnpj";
+} from '@nestjs/common';
+import { formatCnpj, validateCnpj } from 'src/common/utils/format-cnpj';
 
 @Injectable()
 export class ParseCnpjPipe implements PipeTransform {
-  private readonly paramTypes = ["body", "query"];
+  private readonly paramTypes = ['body', 'query'];
 
   transform(value: string, { type }: ArgumentMetadata) {
     if (!value || !this.paramTypes.includes(type)) {
@@ -16,7 +16,7 @@ export class ParseCnpjPipe implements PipeTransform {
     }
     const cnpj = formatCnpj(value);
     if (!validateCnpj(cnpj)) {
-      throw new BadRequestException("CNPJ inválido");
+      throw new BadRequestException('CNPJ inválido');
     }
 
     return cnpj;

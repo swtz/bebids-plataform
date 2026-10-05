@@ -1,4 +1,4 @@
-import { Address } from "src/address/entities/address.entity";
+import { Address } from 'src/address/entities/address.entity';
 import {
   Column,
   CreateDateColumn,
@@ -8,13 +8,13 @@ import {
   ManyToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
-} from "typeorm";
-import { User } from "src/user/entities/user.entity";
-import { WorkTime } from "src/work-time/entities/work-time.entity";
+} from 'typeorm';
+import { User } from 'src/user/entities/user.entity';
+import { WorkTime } from 'src/work-time/entities/work-time.entity';
 
 @Entity()
 export class Place {
-  @PrimaryGeneratedColumn("uuid")
+  @PrimaryGeneratedColumn('uuid')
   id!: string;
 
   @CreateDateColumn()
@@ -35,13 +35,13 @@ export class Place {
   @Column({ unique: true })
   cnpj!: string;
 
-  @Column({ type: "varchar", unique: true, nullable: true })
+  @Column({ type: 'varchar', unique: true, nullable: true })
   cpf!: string | null;
 
   @Column({ unique: true })
   phone!: string;
 
-  @Column({ type: "varchar", unique: true, nullable: true })
+  @Column({ type: 'varchar', unique: true, nullable: true })
   secondPhone!: string | null;
 
   @Column({ unique: true })
@@ -49,30 +49,30 @@ export class Place {
 
   @ManyToMany(() => User, {
     cascade: true,
-    onDelete: "CASCADE",
-    onUpdate: "CASCADE",
+    onDelete: 'CASCADE',
+    onUpdate: 'CASCADE',
   })
   @JoinTable()
   owners!: User[];
 
   @ManyToOne(() => Address, {
-    onDelete: "RESTRICT",
-    onUpdate: "RESTRICT",
+    onDelete: 'RESTRICT',
+    onUpdate: 'RESTRICT',
     nullable: false,
   })
   address!: Address;
 
   @ManyToOne(() => Address, {
-    onDelete: "RESTRICT",
-    onUpdate: "RESTRICT",
+    onDelete: 'RESTRICT',
+    onUpdate: 'RESTRICT',
     nullable: false,
   })
   postalBox!: Address;
 
-  @ManyToMany(() => WorkTime, (workTime) => workTime.places, {
+  @ManyToMany(() => WorkTime, workTime => workTime.places, {
     cascade: true,
-    onDelete: "CASCADE",
-    onUpdate: "CASCADE",
+    onDelete: 'CASCADE',
+    onUpdate: 'CASCADE',
   })
   @JoinTable()
   workTimes!: WorkTime[];

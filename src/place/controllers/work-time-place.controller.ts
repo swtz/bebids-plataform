@@ -9,20 +9,20 @@ import {
   Post,
   Query,
   Req,
-} from "@nestjs/common";
-import { WorkTimePlaceUserService } from "../services/work-time-place-user.service";
-import { PlaceService } from "../services/place.service";
-import { ResponsePlaceDto } from "../dto/response-place.dto";
-import { AuthenticatedRequest } from "src/auth/types/authenticated-request.type";
-import { ResponseWorkTimeDto } from "src/work-time/dto/work-time/response-work-time.dto";
-import { UpdateWorkTimeDto } from "src/work-time/dto/work-time/update-work-time.dto";
-import { WorkTimeDateService } from "../services/work-time-date.service";
-import { Roles } from "src/common/role/decorators/roles.decorator";
-import { Role } from "src/common/role/roles.enum";
-import { CreateWorkTimeDto } from "src/work-time/dto/work-time/create-work-time.dto";
+} from '@nestjs/common';
+import { WorkTimePlaceUserService } from '../services/work-time-place-user.service';
+import { PlaceService } from '../services/place.service';
+import { ResponsePlaceDto } from '../dto/response-place.dto';
+import { AuthenticatedRequest } from 'src/auth/types/authenticated-request.type';
+import { ResponseWorkTimeDto } from 'src/work-time/dto/work-time/response-work-time.dto';
+import { UpdateWorkTimeDto } from 'src/work-time/dto/work-time/update-work-time.dto';
+import { WorkTimeDateService } from '../services/work-time-date.service';
+import { Roles } from 'src/common/role/decorators/roles.decorator';
+import { Role } from 'src/common/role/roles.enum';
+import { CreateWorkTimeDto } from 'src/work-time/dto/work-time/create-work-time.dto';
 
 @Roles(Role.Admin)
-@Controller("work-time-place")
+@Controller('work-time-place')
 export class WorkTimePlaceController {
   constructor(
     private readonly workTimePlaceUserService: WorkTimePlaceUserService,
@@ -30,11 +30,11 @@ export class WorkTimePlaceController {
     private readonly workTimeDateService: WorkTimeDateService,
   ) {}
 
-  @Get("date")
+  @Get('date')
   async getDateObject(
     @Req() req: AuthenticatedRequest,
-    @Query("from") from: string,
-    @Query("to") to: string,
+    @Query('from') from: string,
+    @Query('to') to: string,
   ) {
     const date = await this.workTimeDateService.create(
       { id: req.user.id },
@@ -46,19 +46,19 @@ export class WorkTimePlaceController {
 
   @Get()
   async findAllOfPlace(
-    @Query("id", new ParseUUIDPipe({ optional: true })) id: string,
+    @Query('id', new ParseUUIDPipe({ optional: true })) id: string,
   ) {
     const qo = id ? { id } : { code: process.env.DEFAULT_PLACE_CODE };
     const { workTimes } = await this.placeService.findOneByOrFail(qo);
     const parsedWorkTimes = workTimes.map(
-      (item) => new ResponseWorkTimeDto(item),
+      item => new ResponseWorkTimeDto(item),
     );
     return parsedWorkTimes;
   }
 
-  @Post("me/:id")
+  @Post('me/:id')
   async addToPlace(
-    @Param("id", ParseUUIDPipe) id: string,
+    @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: CreateWorkTimeDto,
     @Req() req: AuthenticatedRequest,
   ) {
@@ -70,9 +70,9 @@ export class WorkTimePlaceController {
     return new ResponsePlaceDto(place);
   }
 
-  @Patch("me/:id")
+  @Patch('me/:id')
   async updateShared(
-    @Param("id", ParseUUIDPipe) id: string,
+    @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: UpdateWorkTimeDto,
     @Req() req: AuthenticatedRequest,
   ) {
@@ -84,10 +84,10 @@ export class WorkTimePlaceController {
     return new ResponseWorkTimeDto(workTime);
   }
 
-  @Delete("me/:id")
+  @Delete('me/:id')
   async removeShared(
     @Req() req: AuthenticatedRequest,
-    @Param("id", ParseUUIDPipe) id: string,
+    @Param('id', ParseUUIDPipe) id: string,
   ) {
     const workTime = await this.workTimePlaceUserService.removeShared(
       id,

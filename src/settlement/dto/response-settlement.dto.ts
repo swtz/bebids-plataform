@@ -1,8 +1,8 @@
-import { WeekDay } from "src/common/enums/weekDays.enum";
-import { Settlement } from "../entities/settlement.entity";
-import { ResponsePreviewSettlement } from "../types/response-preview-settlement.type";
-import { SmallResponseUserDto } from "src/user/dtos/user/small-response-user.dto";
-import { MediumResponseWorkTimeDto } from "src/work-time/dto/work-time/medium-response-work-time.dto";
+import { WeekDay } from 'src/common/enums/weekDays.enum';
+import { Settlement } from '../entities/settlement.entity';
+import { ResponsePreviewSettlement } from '../types/response-preview-settlement.type';
+import { SmallResponseUserDto } from 'src/user/dtos/user/small-response-user.dto';
+import { MediumResponseWorkTimeDto } from 'src/work-time/dto/work-time/medium-response-work-time.dto';
 
 export class ResponseSettlementDto {
   readonly id?: string;

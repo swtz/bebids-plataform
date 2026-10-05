@@ -1,10 +1,10 @@
-import { InternalServerErrorException, Module } from "@nestjs/common";
-import { AuthService } from "./auth.service";
-import { AuthController } from "./auth.controller";
-import { UserModule } from "src/user/user.module";
-import { CommonModule } from "src/common/common.module";
-import { JwtModule } from "@nestjs/jwt";
-import { JwtStrategy } from "./jwt.strategy";
+import { InternalServerErrorException, Module } from '@nestjs/common';
+import { AuthService } from './auth.service';
+import { AuthController } from './auth.controller';
+import { UserModule } from 'src/user/user.module';
+import { CommonModule } from 'src/common/common.module';
+import { JwtModule } from '@nestjs/jwt';
+import { JwtStrategy } from './jwt.strategy';
 
 @Module({
   imports: [
@@ -16,7 +16,7 @@ import { JwtStrategy } from "./jwt.strategy";
 
         if (!secret) {
           throw new InternalServerErrorException(
-            "JWT_SECRET not found in .env file",
+            'JWT_SECRET not found in .env file',
           );
         }
 

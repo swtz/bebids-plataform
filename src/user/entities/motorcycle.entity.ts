@@ -6,13 +6,13 @@ import {
   OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
-} from "typeorm";
-import { User } from "./user.entity";
-import { DeliveryMan } from "./delivery-man.entity";
+} from 'typeorm';
+import { User } from './user.entity';
+import { DeliveryMan } from './delivery-man.entity';
 
 @Entity()
 export class Motorcycle {
-  @PrimaryGeneratedColumn("uuid")
+  @PrimaryGeneratedColumn('uuid')
   id!: string;
 
   @Column({ unique: true })
@@ -27,7 +27,7 @@ export class Motorcycle {
   @Column()
   model!: string;
 
-  @Column({ type: "varchar", nullable: true })
+  @Column({ type: 'varchar', nullable: true })
   displacement!: string | null;
 
   @Column()
@@ -42,21 +42,21 @@ export class Motorcycle {
   @UpdateDateColumn()
   updatedAt!: Date;
 
-  @Column({ type: "varchar", nullable: true })
+  @Column({ type: 'varchar', nullable: true })
   placeCode!: string | null;
 
   @ManyToOne(() => User, {
     nullable: true,
-    onDelete: "SET NULL",
-    onUpdate: "SET NULL",
+    onDelete: 'SET NULL',
+    onUpdate: 'SET NULL',
   })
   owner!: User;
 
-  @OneToOne(() => DeliveryMan, (deliveryMan) => deliveryMan.motorcycle, {
+  @OneToOne(() => DeliveryMan, deliveryMan => deliveryMan.motorcycle, {
     nullable: true,
     cascade: true,
-    onDelete: "CASCADE",
-    onUpdate: "CASCADE",
+    onDelete: 'CASCADE',
+    onUpdate: 'CASCADE',
   })
   driver!: DeliveryMan | null;
 }

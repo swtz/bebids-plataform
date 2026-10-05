@@ -4,11 +4,11 @@ export function formatCpf(cpf: string) {
 }
 
 function cleanCpf(cpf: string) {
-  return cpf.replace(/\D/g, "");
+  return cpf.replace(/\D/g, '');
 }
 
 function buildCpf(cpf: string) {
-  return cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/g, "$1.$2.$3-$4");
+  return cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/g, '$1.$2.$3-$4');
 }
 
 export function validateCpf(cpf: string) {

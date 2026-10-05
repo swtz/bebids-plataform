@@ -1,8 +1,8 @@
-import { Role } from "src/common/role/roles.enum";
-import { User } from "../../entities/user.entity";
-import { ResponseVoucherDto } from "src/voucher/dto/response-voucher.dto";
-import { SmallResponseIntervalTimeDto } from "src/work-time/dto/interval-time/small-response-interval-time.dto";
-import { MediumResponseWorkTimeDto } from "src/work-time/dto/work-time/medium-response-work-time.dto";
+import { Role } from 'src/common/role/roles.enum';
+import { User } from '../../entities/user.entity';
+import { ResponseVoucherDto } from 'src/voucher/dto/response-voucher.dto';
+import { SmallResponseIntervalTimeDto } from 'src/work-time/dto/interval-time/small-response-interval-time.dto';
+import { MediumResponseWorkTimeDto } from 'src/work-time/dto/work-time/medium-response-work-time.dto';
 
 export class ResponseUserDto {
   readonly id: string;
@@ -32,10 +32,10 @@ export class ResponseUserDto {
     this.email = user.email;
     this.placeCode = user.placeCode;
     this.roles =
-      user.roles.length > 0 ? user.roles.map((role) => role.name) : null;
+      user.roles.length > 0 ? user.roles.map(role => role.name) : null;
     this.vouchers =
       user.vouchers && user.vouchers.length > 0
-        ? user.vouchers.map((voucher) => {
+        ? user.vouchers.map(voucher => {
             return new ResponseVoucherDto(voucher);
           })
         : null;

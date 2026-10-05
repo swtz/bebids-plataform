@@ -5,28 +5,28 @@ import {
   NotFoundException,
   UnauthorizedException,
   UnprocessableEntityException,
-} from "@nestjs/common";
-import { InjectRepository } from "@nestjs/typeorm";
-import { Payout } from "./entities/payout.entity";
+} from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Payout } from './entities/payout.entity';
 import {
   FindOptionsOrder,
   FindOptionsOrderValue,
   FindOptionsWhere,
   Repository,
-} from "typeorm";
-import { DeliveryService } from "src/delivery/delivery.service";
-import { setDecimalPlaces } from "src/common/utils/set-decimal-places";
-import { VoucherService } from "src/voucher/voucher.service";
-import { User } from "src/user/entities/user.entity";
-import { weekDays } from "src/common/enums/weekDays.enum";
-import voucherRelations from "../voucher/data/relations/voucher";
-import { Role } from "src/common/role/roles.enum";
-import { Voucher } from "src/voucher/enums/voucher.enum";
-import { WorkTimeDateService } from "src/place/services/work-time-date.service";
-import { DeliveryManService } from "src/user/services/delivery-man.service";
-import { full as mtbFull } from "src/user/data/relations/delivery-man";
-import { getUnixTime } from "date-fns";
-import { ResponsePreviewPayout } from "./types/response-preview-payout.type";
+} from 'typeorm';
+import { DeliveryService } from 'src/delivery/delivery.service';
+import { setDecimalPlaces } from 'src/common/utils/set-decimal-places';
+import { VoucherService } from 'src/voucher/voucher.service';
+import { User } from 'src/user/entities/user.entity';
+import { weekDays } from 'src/common/enums/weekDays.enum';
+import voucherRelations from '../voucher/data/relations/voucher';
+import { Role } from 'src/common/role/roles.enum';
+import { Voucher } from 'src/voucher/enums/voucher.enum';
+import { WorkTimeDateService } from 'src/place/services/work-time-date.service';
+import { DeliveryManService } from 'src/user/services/delivery-man.service';
+import { full as mtbFull } from 'src/user/data/relations/delivery-man';
+import { getUnixTime } from 'date-fns';
+import { ResponsePreviewPayout } from './types/response-preview-payout.type';
 
 @Injectable()
 export class PayoutService {
@@ -157,7 +157,7 @@ export class PayoutService {
 
     if (payout.isClosed) {
       throw new UnauthorizedException(
-        "Não é possível alterar um pagamento fechado",
+        'Não é possível alterar um pagamento fechado',
       );
     }
 
@@ -168,7 +168,7 @@ export class PayoutService {
 
     if (!user) {
       throw new UnprocessableEntityException(
-        "A entidade Motoboy não possui um usuário válido",
+        'A entidade Motoboy não possui um usuário válido',
       );
     }
 
@@ -180,7 +180,7 @@ export class PayoutService {
 
     if (getUnixTime(initDate) > getUnixTime(to)) {
       throw new BadRequestException(
-        "A data final não pode ser maior do que a data inicial",
+        'A data final não pode ser maior do que a data inicial',
       );
     }
 
@@ -208,7 +208,7 @@ export class PayoutService {
     const payout = await this.findOneByOrFail({ id });
     if (payout.isClosed) {
       throw new UnauthorizedException(
-        "Não é possível atualizar um caixa fechado",
+        'Não é possível atualizar um caixa fechado',
       );
     }
     payout.placeCode = placeCode ?? payout.placeCode;
@@ -220,7 +220,7 @@ export class PayoutService {
     const payout = await this.findOneBy(payoutData);
 
     if (!payout) {
-      throw new NotFoundException("Pagamento não encontrado");
+      throw new NotFoundException('Pagamento não encontrado');
     }
 
     return payout;
@@ -279,7 +279,7 @@ export class PayoutService {
 
     if (payout.isClosed) {
       throw new UnauthorizedException(
-        "Não é possível remover um pagamento fechado",
+        'Não é possível remover um pagamento fechado',
       );
     }
 

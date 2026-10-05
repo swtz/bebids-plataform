@@ -1,18 +1,18 @@
-import { Injectable, NotFoundException } from "@nestjs/common";
+import { Injectable, NotFoundException } from '@nestjs/common';
 import {
   EntityManager,
   FindOptionsOrder,
   FindOptionsOrderValue,
   FindOptionsWhere,
   Repository,
-} from "typeorm";
-import { DeliveryMan } from "../entities/delivery-man.entity";
-import { InjectRepository } from "@nestjs/typeorm";
-import { User } from "../entities/user.entity";
-import { Motorcycle } from "../entities/motorcycle.entity";
-import { CreateDeliveryManDto } from "../dtos/delivery-man/create-delivery-man.dto";
-import { DeliveryManType } from "../types/delivery-man.type";
-import { essencial, full } from "../data/relations/delivery-man";
+} from 'typeorm';
+import { DeliveryMan } from '../entities/delivery-man.entity';
+import { InjectRepository } from '@nestjs/typeorm';
+import { User } from '../entities/user.entity';
+import { Motorcycle } from '../entities/motorcycle.entity';
+import { CreateDeliveryManDto } from '../dtos/delivery-man/create-delivery-man.dto';
+import { DeliveryManType } from '../types/delivery-man.type';
+import { essencial, full } from '../data/relations/delivery-man';
 
 @Injectable()
 export class DeliveryManService {
@@ -44,7 +44,7 @@ export class DeliveryManService {
     const motoboy = await this.findOneBy(userData, relations, manager);
 
     if (!motoboy) {
-      throw new NotFoundException("Usuário não encontrado");
+      throw new NotFoundException('Usuário não encontrado');
     }
 
     return motoboy;

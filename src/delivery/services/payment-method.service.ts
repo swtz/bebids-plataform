@@ -1,8 +1,8 @@
-import { InjectRepository } from "@nestjs/typeorm";
-import { PaymentMethod } from "../entities/payment-method.entity";
-import { PaymentMethod as PaymentMethodEnum } from "../enums/payment-methods.enum";
-import { EntityManager, FindOptionsWhere, Repository } from "typeorm";
-import { Injectable, NotFoundException } from "@nestjs/common";
+import { InjectRepository } from '@nestjs/typeorm';
+import { PaymentMethod } from '../entities/payment-method.entity';
+import { PaymentMethod as PaymentMethodEnum } from '../enums/payment-methods.enum';
+import { EntityManager, FindOptionsWhere, Repository } from 'typeorm';
+import { Injectable, NotFoundException } from '@nestjs/common';
 
 @Injectable()
 export class PaymentMethodService {
@@ -42,7 +42,7 @@ export class PaymentMethodService {
     const paymentMethod = await this.findOneBy(paymentMethodData, manager);
 
     if (!paymentMethod) {
-      throw new NotFoundException("Método de pagamento não existe");
+      throw new NotFoundException('Método de pagamento não existe');
     }
 
     return paymentMethod;

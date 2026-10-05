@@ -2,7 +2,7 @@ import {
   Injectable,
   NotFoundException,
   UnprocessableEntityException,
-} from "@nestjs/common";
+} from '@nestjs/common';
 import {
   DataSource,
   EntityManager,
@@ -10,26 +10,26 @@ import {
   FindOptionsOrderValue,
   FindOptionsWhere,
   Repository,
-} from "typeorm";
-import { Delivery } from "./entities/delivery.entity";
-import { InjectRepository } from "@nestjs/typeorm";
-import { CreateDeliveryDto } from "./dto/create-delivery.dto";
-import { User } from "src/user/entities/user.entity";
-import { UserService } from "src/user/services/user.service";
-import { CustomerService } from "src/customer/services/customer.service";
-import { AddressService } from "src/address/address.service";
-import { UpdateDeliveryDto } from "./dto/update-delivery.dto";
-import { PaymentMethodService } from "./services/payment-method.service";
-import { setDecimalPlaces } from "src/common/utils/set-decimal-places";
-import { TipService } from "src/tip/tip.service";
-import relations from "./data/relations/delivery";
+} from 'typeorm';
+import { Delivery } from './entities/delivery.entity';
+import { InjectRepository } from '@nestjs/typeorm';
+import { CreateDeliveryDto } from './dto/create-delivery.dto';
+import { User } from 'src/user/entities/user.entity';
+import { UserService } from 'src/user/services/user.service';
+import { CustomerService } from 'src/customer/services/customer.service';
+import { AddressService } from 'src/address/address.service';
+import { UpdateDeliveryDto } from './dto/update-delivery.dto';
+import { PaymentMethodService } from './services/payment-method.service';
+import { setDecimalPlaces } from 'src/common/utils/set-decimal-places';
+import { TipService } from 'src/tip/tip.service';
+import relations from './data/relations/delivery';
 import {
   DeliveryFindAllFactory,
   DeliveryTaxFactory,
   FindAllParams,
   TotalPurchaseFactory,
-} from "./factories/query-factory.";
-import { DeliveryManService } from "src/user/services/delivery-man.service";
+} from './factories/query-factory.';
+import { DeliveryManService } from 'src/user/services/delivery-man.service';
 
 @Injectable()
 export class DeliveryService {
@@ -46,7 +46,7 @@ export class DeliveryService {
   ) {}
 
   async create(dto: CreateDeliveryDto, user: User) {
-    return this.dataSource.transaction(async (manager) => {
+    return this.dataSource.transaction(async manager => {
       const operator = await this.userService.findOneByOrFail(
         { id: user.id },
         undefined,
@@ -100,7 +100,7 @@ export class DeliveryService {
   }
 
   async update(dto: UpdateDeliveryDto, operator: User, id: string) {
-    return this.dataSource.transaction(async (manager) => {
+    return this.dataSource.transaction(async manager => {
       const delivery = await this.findOneOwnedByOrFail(
         operator,
         { id },
@@ -213,7 +213,7 @@ export class DeliveryService {
     const delivery = await this.findOneOwnedBy(user, deliveryData, manager);
 
     if (!delivery) {
-      throw new NotFoundException("Entrega não encontrada");
+      throw new NotFoundException('Entrega não encontrada');
     }
 
     return delivery;
@@ -258,7 +258,7 @@ export class DeliveryService {
     const deliveries = await this.deliveryRepository.find({
       where: queryObject,
       order: {
-        createdAt: "DESC",
+        createdAt: 'DESC',
       },
       relations,
     });
@@ -273,7 +273,7 @@ export class DeliveryService {
     const delivery = await this.findOneBy(deliveryData, manager);
 
     if (!delivery) {
-      throw new NotFoundException("Entrega não encontrada");
+      throw new NotFoundException('Entrega não encontrada');
     }
 
     return delivery;
@@ -314,7 +314,7 @@ export class DeliveryService {
   async sumDeliveryTaxCol(queryParams: FindAllParams) {
     const queryFactory = new DeliveryTaxFactory();
     const queryObject = queryFactory.factoryMethod(queryParams);
-    const total = await this.deliveryRepository.sum("deliveryTax", queryObject);
+    const total = await this.deliveryRepository.sum('deliveryTax', queryObject);
 
     if (!total) {
       return 0;
@@ -327,7 +327,7 @@ export class DeliveryService {
     const queryFactory = new TotalPurchaseFactory();
     const queryObject = queryFactory.factoryMethod(queryParams);
     const total = await this.deliveryRepository.sum(
-      "totalPurchase",
+      'totalPurchase',
       queryObject,
     );
 
@@ -339,7 +339,7 @@ export class DeliveryService {
   }
 
   async remove(user: User, id: string) {
-    return this.dataSource.transaction(async (manager) => {
+    return this.dataSource.transaction(async manager => {
       const delivery = await this.findOneOwnedByOrFail(user, { id }, manager);
       if (delivery.tip !== null) {
         await this.tipService.remove(delivery.tip.id, manager);

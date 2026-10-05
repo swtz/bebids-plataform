@@ -8,24 +8,24 @@ import {
   ParseUUIDPipe,
   Post,
   Query,
-} from "@nestjs/common";
-import { MotorcycleService } from "../services/motorcycle.service";
-import { CreateMotorcycleDto } from "../dtos/motorcycle/create-motorcycle.dto";
-import { ResponseMotorcycleDto } from "../dtos/motorcycle/response-motorcycle.dto";
-import { ParseBrPhonePipe } from "../pipes/format-br-phone.pipe";
-import { FindOptionsOrder, FindOptionsOrderValue } from "typeorm";
-import { Motorcycle } from "../entities/motorcycle.entity";
-import { ParsePlaceCodePipe } from "src/place/pipes/parse-place-code.pipe";
+} from '@nestjs/common';
+import { MotorcycleService } from '../services/motorcycle.service';
+import { CreateMotorcycleDto } from '../dtos/motorcycle/create-motorcycle.dto';
+import { ResponseMotorcycleDto } from '../dtos/motorcycle/response-motorcycle.dto';
+import { ParseBrPhonePipe } from '../pipes/format-br-phone.pipe';
+import { FindOptionsOrder, FindOptionsOrderValue } from 'typeorm';
+import { Motorcycle } from '../entities/motorcycle.entity';
+import { ParsePlaceCodePipe } from 'src/place/pipes/parse-place-code.pipe';
 import {
   CommonType,
   ParseOrderParamsPipe,
-} from "src/delivery/pipes/parse-order-params.pipe";
-import { motorcycleOrderMap } from "src/common/data/entity-instructions/ordering";
-import { Roles } from "src/common/role/decorators/roles.decorator";
-import { Role } from "src/common/role/roles.enum";
+} from 'src/delivery/pipes/parse-order-params.pipe';
+import { motorcycleOrderMap } from 'src/common/data/entity-instructions/ordering';
+import { Roles } from 'src/common/role/decorators/roles.decorator';
+import { Role } from 'src/common/role/roles.enum';
 
 @Roles(Role.Admin, Role.Operator, Role.Motoboy)
-@Controller("motorcycle")
+@Controller('motorcycle')
 export class MotorcycleController {
   constructor(private readonly motorcycleService: MotorcycleService) {}
 
@@ -38,20 +38,20 @@ export class MotorcycleController {
 
   @Get()
   async findAll(
-    @Query("year") year: string,
-    @Query("model") model: string,
-    @Query("displacement") displacement: string,
-    @Query("color") color: string,
-    @Query("brand") brand: string,
-    @Query("isActive", new ParseBoolPipe({ optional: true })) isActive: boolean,
-    @Query("id", new ParseUUIDPipe({ optional: true })) id: string,
-    @Query("name") name: string,
-    @Query("lastName") lastName: string,
-    @Query("nickname") nickname: string,
-    @Query("phone", ParseBrPhonePipe) phone: string,
-    @Query("secondPhone", ParseBrPhonePipe) secondPhone: string,
-    @Query("type") type: "owner" | "driver" = "owner",
-    @Query("placeCode", ParsePlaceCodePipe) placeCode: string,
+    @Query('year') year: string,
+    @Query('model') model: string,
+    @Query('displacement') displacement: string,
+    @Query('color') color: string,
+    @Query('brand') brand: string,
+    @Query('isActive', new ParseBoolPipe({ optional: true })) isActive: boolean,
+    @Query('id', new ParseUUIDPipe({ optional: true })) id: string,
+    @Query('name') name: string,
+    @Query('lastName') lastName: string,
+    @Query('nickname') nickname: string,
+    @Query('phone', ParseBrPhonePipe) phone: string,
+    @Query('secondPhone', ParseBrPhonePipe) secondPhone: string,
+    @Query('type') type: 'owner' | 'driver' = 'owner',
+    @Query('placeCode', ParsePlaceCodePipe) placeCode: string,
     @Query(new ParseOrderParamsPipe<CommonType<Motorcycle>>(motorcycleOrderMap))
     orderParams: {
       [K in keyof FindOptionsOrder<Motorcycle>]: FindOptionsOrderValue;
@@ -75,26 +75,26 @@ export class MotorcycleController {
         brand,
         isActive,
         placeCode,
-        owner: type === "owner" || !type ? userData : undefined,
-        driver: type === "driver" ? { user: userData } : undefined,
+        owner: type === 'owner' || !type ? userData : undefined,
+        driver: type === 'driver' ? { user: userData } : undefined,
       },
       orderParams,
     );
     const parsedMotorcycles = motorcycles.map(
-      (item) => new ResponseMotorcycleDto(item),
+      item => new ResponseMotorcycleDto(item),
     );
     return parsedMotorcycles;
   }
 
-  @Get(":id")
-  async findOne(@Param("id", ParseUUIDPipe) id: string) {
+  @Get(':id')
+  async findOne(@Param('id', ParseUUIDPipe) id: string) {
     const motorcycle = await this.motorcycleService.findOneByOrFail({ id });
     return new ResponseMotorcycleDto(motorcycle);
   }
 
   @Roles(Role.Admin)
-  @Delete(":id")
-  async remove(@Param("id", ParseUUIDPipe) id: string) {
+  @Delete(':id')
+  async remove(@Param('id', ParseUUIDPipe) id: string) {
     const motorcycle = await this.motorcycleService.remove(id);
     return new ResponseMotorcycleDto(motorcycle);
   }

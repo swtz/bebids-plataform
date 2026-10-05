@@ -3,26 +3,26 @@ import {
   Injectable,
   NotFoundException,
   UnauthorizedException,
-} from "@nestjs/common";
+} from '@nestjs/common';
 import {
   EntityManager,
   FindOptionsOrder,
   FindOptionsOrderValue,
   FindOptionsWhere,
   Repository,
-} from "typeorm";
-import { Voucher } from "./entities/voucher.entity";
-import { InjectRepository } from "@nestjs/typeorm";
-import { UserService } from "src/user/services/user.service";
-import { CreateVoucherDto } from "./dto/create-voucher.dto";
-import { User } from "src/user/entities/user.entity";
-import { UpdateVoucherDto } from "./dto/update-voucher.dto";
-import { setDecimalPlaces } from "src/common/utils/set-decimal-places";
-import relations from "./data/relations/voucher";
+} from 'typeorm';
+import { Voucher } from './entities/voucher.entity';
+import { InjectRepository } from '@nestjs/typeorm';
+import { UserService } from 'src/user/services/user.service';
+import { CreateVoucherDto } from './dto/create-voucher.dto';
+import { User } from 'src/user/entities/user.entity';
+import { UpdateVoucherDto } from './dto/update-voucher.dto';
+import { setDecimalPlaces } from 'src/common/utils/set-decimal-places';
+import relations from './data/relations/voucher';
 import {
   FindAllParams,
   VoucherFindAllFactory,
-} from "./factories/query-factory";
+} from './factories/query-factory';
 
 @Injectable()
 export class VoucherService {
@@ -55,12 +55,12 @@ export class VoucherService {
     manager?: EntityManager,
   ) {
     if (!id) {
-      throw new BadRequestException("O ID do usuário é obrigatório");
+      throw new BadRequestException('O ID do usuário é obrigatório');
     }
 
     const entity = await this.userService.findOneByOrFail(
       { id },
-      "motoboy-essencial",
+      'motoboy-essencial',
       manager,
     );
     const { isLoggedUserAdmin } = await this.userService.getUserAndEntityAuth(
@@ -83,7 +83,7 @@ export class VoucherService {
     }
 
     throw new UnauthorizedException(
-      "Só é possível criar compras ou vales para os motoboys",
+      'Só é possível criar compras ou vales para os motoboys',
     );
   }
 
@@ -94,7 +94,7 @@ export class VoucherService {
     manager?: EntityManager,
   ) {
     if (!dto.id) {
-      throw new BadRequestException("Campo ID não pode estar vazio");
+      throw new BadRequestException('Campo ID não pode estar vazio');
     }
 
     const authFlags = await this.userService.getUserAndEntityAuth(
@@ -119,7 +119,7 @@ export class VoucherService {
 
     if (!authFlags.isEntityMotoboy) {
       throw new UnauthorizedException(
-        "Só é possível atualizar compras ou vales dos motoboys",
+        'Só é possível atualizar compras ou vales dos motoboys',
       );
     }
 
@@ -151,7 +151,7 @@ export class VoucherService {
     const voucher = await this.findOneBy(voucherData, manager);
 
     if (!voucher) {
-      throw new NotFoundException("Compra ou vale não encontrado");
+      throw new NotFoundException('Compra ou vale não encontrado');
     }
 
     return voucher;
@@ -175,7 +175,7 @@ export class VoucherService {
     const voucher = await this.findOneOwnedBy(voucherData, user, manager);
 
     if (!voucher) {
-      throw new NotFoundException("Compra ou vale não encontrado");
+      throw new NotFoundException('Compra ou vale não encontrado');
     }
 
     return voucher;
@@ -221,7 +221,7 @@ export class VoucherService {
     const factory = new VoucherFindAllFactory();
     const queryObject = factory.factoryMethod(queryParams);
 
-    const total = await repo.sum("amount", queryObject);
+    const total = await repo.sum('amount', queryObject);
 
     if (!total) {
       return 0;

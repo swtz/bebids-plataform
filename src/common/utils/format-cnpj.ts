@@ -4,11 +4,11 @@ export function formatCnpj(cnpj: string) {
 }
 
 function cleanCnpj(cnpj: string) {
-  return cnpj.replace(/\D/g, "");
+  return cnpj.replace(/\D/g, '');
 }
 
 function buildCnpj(cnpj: string) {
-  return cnpj.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/g, "$1.$2.$3/$4-$5");
+  return cnpj.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/g, '$1.$2.$3/$4-$5');
 }
 
 export function validateCnpj(cnpj: string) {

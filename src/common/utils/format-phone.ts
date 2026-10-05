@@ -1,18 +1,18 @@
 export function formatPhone(parsedPhone: string) {
   const cleanedPhone = parsedPhone
-    .replaceAll("(", "")
-    .replaceAll(")", "")
-    .replaceAll("-", "")
-    .replaceAll("/", "")
+    .replaceAll('(', '')
+    .replaceAll(')', '')
+    .replaceAll('-', '')
+    .replaceAll('/', '')
     .trim()
-    .split(" ")
-    .join("");
+    .split(' ')
+    .join('');
 
   if (cleanedPhone.length === 11) {
     return `+55${cleanedPhone}`;
   }
 
-  if (!cleanedPhone.startsWith("+")) {
+  if (!cleanedPhone.startsWith('+')) {
     return `+${cleanedPhone}`;
   }
   return cleanedPhone;

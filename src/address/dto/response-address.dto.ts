@@ -1,4 +1,4 @@
-import { Address } from "../entities/address.entity";
+import { Address } from '../entities/address.entity';
 
 export class ResponseAddressDto {
   readonly id: string;

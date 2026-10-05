@@ -1,5 +1,5 @@
-import { Voucher } from "../entities/voucher.entity";
-import { SmallResponseUserDto } from "src/user/dtos/user/small-response-user.dto";
+import { Voucher } from '../entities/voucher.entity';
+import { SmallResponseUserDto } from 'src/user/dtos/user/small-response-user.dto';
 
 export class ResponseVoucherDto {
   readonly id: string;

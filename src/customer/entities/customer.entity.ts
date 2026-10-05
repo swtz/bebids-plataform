@@ -1,4 +1,4 @@
-import { Address } from "src/address/entities/address.entity";
+import { Address } from 'src/address/entities/address.entity';
 import {
   Column,
   CreateDateColumn,
@@ -6,11 +6,11 @@ import {
   OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
-} from "typeorm";
+} from 'typeorm';
 
 @Entity()
 export class Customer {
-  @PrimaryGeneratedColumn("uuid")
+  @PrimaryGeneratedColumn('uuid')
   id!: string;
 
   @Column()
@@ -25,10 +25,10 @@ export class Customer {
   @Column({ unique: true })
   phone!: string;
 
-  @Column({ type: "varchar", nullable: true, unique: true })
+  @Column({ type: 'varchar', nullable: true, unique: true })
   email!: string | null;
 
-  @Column({ type: "varchar", nullable: true, unique: true })
+  @Column({ type: 'varchar', nullable: true, unique: true })
   secondPhone!: string | null;
 
   @CreateDateColumn()
@@ -37,9 +37,9 @@ export class Customer {
   @UpdateDateColumn()
   updateAt!: Date;
 
-  @OneToMany(() => Address, (address) => address.customer, {
-    onDelete: "SET NULL",
-    onUpdate: "SET NULL",
+  @OneToMany(() => Address, address => address.customer, {
+    onDelete: 'SET NULL',
+    onUpdate: 'SET NULL',
   })
   addresses!: Address[];
 }

@@ -1,4 +1,4 @@
-import { Motorcycle } from "src/user/entities/motorcycle.entity";
+import { Motorcycle } from 'src/user/entities/motorcycle.entity';
 
 export class SmallResponseMotorcycleDto {
   readonly id: string;

@@ -1,4 +1,4 @@
-import { IntervalTime } from "src/work-time/entities/interval-time.entity";
+import { IntervalTime } from 'src/work-time/entities/interval-time.entity';
 
 export class SmallResponseIntervalTimeDto {
   readonly id: string;

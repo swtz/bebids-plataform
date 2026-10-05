@@ -1,6 +1,6 @@
-import { getUnixTime, intervalToDuration } from "date-fns";
-import { padLeftWithChar } from "./pad-left-with-char";
-import { getTimeFromDateIsoString } from "./get-time-from-date-iso-string";
+import { getUnixTime, intervalToDuration } from 'date-fns';
+import { padLeftWithChar } from './pad-left-with-char';
+import { getTimeFromDateIsoString } from './get-time-from-date-iso-string';
 
 export function generateDurationTime(fromTime: string, toTime: string): string {
   const initTime =
@@ -16,10 +16,10 @@ export function generateDurationTime(fromTime: string, toTime: string): string {
     start: initDate,
     end: relativeEndDate,
   });
-  const d2Hours = hours ? padLeftWithChar(hours, "0") : "00";
-  const d2Minutes = minutes ? padLeftWithChar(minutes, "0") : "00";
-  const d2Seconds = seconds ? padLeftWithChar(seconds, "0") : "00";
+  const d2Hours = hours ? padLeftWithChar(hours, '0') : '00';
+  const d2Minutes = minutes ? padLeftWithChar(minutes, '0') : '00';
+  const d2Seconds = seconds ? padLeftWithChar(seconds, '0') : '00';
   const duration =
-    days === 1 ? "24:00:00" : `${d2Hours}:${d2Minutes}:${d2Seconds}`;
+    days === 1 ? '24:00:00' : `${d2Hours}:${d2Minutes}:${d2Seconds}`;
   return duration;
 }

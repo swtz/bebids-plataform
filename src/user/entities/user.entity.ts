@@ -1,6 +1,6 @@
-import { Role } from "src/common/role/entities/role.entity";
-import { Voucher } from "src/voucher/entities/voucher.entity";
-import { WorkTime } from "src/work-time/entities/work-time.entity";
+import { Role } from 'src/common/role/entities/role.entity';
+import { Voucher } from 'src/voucher/entities/voucher.entity';
+import { WorkTime } from 'src/work-time/entities/work-time.entity';
 import {
   Column,
   CreateDateColumn,
@@ -12,13 +12,13 @@ import {
   OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
-} from "typeorm";
-import { DeliveryMan } from "./delivery-man.entity";
-import { IntervalTime } from "src/work-time/entities/interval-time.entity";
+} from 'typeorm';
+import { DeliveryMan } from './delivery-man.entity';
+import { IntervalTime } from 'src/work-time/entities/interval-time.entity';
 
 @Entity()
 export class User {
-  @PrimaryGeneratedColumn("uuid")
+  @PrimaryGeneratedColumn('uuid')
   id!: string;
 
   @Column()
@@ -33,10 +33,10 @@ export class User {
   @Column({ unique: true })
   phone!: string;
 
-  @Column({ type: "varchar", unique: true, nullable: true })
+  @Column({ type: 'varchar', unique: true, nullable: true })
   secondPhone!: string | null;
 
-  @Column({ type: "varchar", unique: true, nullable: true })
+  @Column({ type: 'varchar', unique: true, nullable: true })
   email!: string | null;
 
   @Column()
@@ -54,35 +54,35 @@ export class User {
   @Column()
   placeCode!: string;
 
-  @OneToOne(() => DeliveryMan, (deliveryMan) => deliveryMan.user, {
+  @OneToOne(() => DeliveryMan, deliveryMan => deliveryMan.user, {
     nullable: true,
-    onDelete: "SET NULL",
-    onUpdate: "SET NULL",
+    onDelete: 'SET NULL',
+    onUpdate: 'SET NULL',
   })
   deliveryMan!: DeliveryMan | null;
 
-  @OneToMany(() => Voucher, (voucher) => voucher.user, {
+  @OneToMany(() => Voucher, voucher => voucher.user, {
     nullable: true,
-    onDelete: "SET NULL",
-    onUpdate: "SET NULL",
+    onDelete: 'SET NULL',
+    onUpdate: 'SET NULL',
   })
   vouchers!: Voucher[] | null;
 
-  @ManyToMany(() => Role, (role) => role.users)
+  @ManyToMany(() => Role, role => role.users)
   @JoinTable()
   roles!: Role[];
 
-  @ManyToOne(() => WorkTime, (workTime) => workTime.users, {
+  @ManyToOne(() => WorkTime, workTime => workTime.users, {
     nullable: true,
-    onDelete: "SET NULL",
-    onUpdate: "SET NULL",
+    onDelete: 'SET NULL',
+    onUpdate: 'SET NULL',
   })
   workTime!: WorkTime | null;
 
-  @OneToOne(() => IntervalTime, (intervalTime) => intervalTime.user, {
+  @OneToOne(() => IntervalTime, intervalTime => intervalTime.user, {
     nullable: true,
-    onDelete: "SET NULL",
-    onUpdate: "SET NULL",
+    onDelete: 'SET NULL',
+    onUpdate: 'SET NULL',
   })
   intervalTime!: IntervalTime | null;
 }

@@ -1,6 +1,6 @@
-import { FindOptionsRelations } from "typeorm";
-import { essencial as userEssencial } from "./user";
-import { DeliveryMan } from "src/user/entities/delivery-man.entity";
+import { FindOptionsRelations } from 'typeorm';
+import { essencial as userEssencial } from './user';
+import { DeliveryMan } from 'src/user/entities/delivery-man.entity';
 
 export const essencial: FindOptionsRelations<DeliveryMan> = {
   motorcycle: true,

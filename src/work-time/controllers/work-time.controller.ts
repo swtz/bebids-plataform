@@ -11,43 +11,43 @@ import {
   Patch,
   Query,
   Req,
-} from "@nestjs/common";
-import { Shift } from "src/common/enums/work-shifts.enum";
-import { WorkTimeService } from "../services/work-time.service";
-import { Roles } from "src/common/role/decorators/roles.decorator";
-import { Role } from "src/common/role/roles.enum";
-import { UpdateWorkTimeDto } from "../dto/work-time/update-work-time.dto";
-import { AuthenticatedRequest } from "src/auth/types/authenticated-request.type";
-import { ParseBrPhonePipe } from "src/user/pipes/format-br-phone.pipe";
-import { ResponseWorkTimeDto } from "../dto/work-time/response-work-time.dto";
-import { ParseEmailPipe } from "src/user/pipes/format-email.pipe";
+} from '@nestjs/common';
+import { Shift } from 'src/common/enums/work-shifts.enum';
+import { WorkTimeService } from '../services/work-time.service';
+import { Roles } from 'src/common/role/decorators/roles.decorator';
+import { Role } from 'src/common/role/roles.enum';
+import { UpdateWorkTimeDto } from '../dto/work-time/update-work-time.dto';
+import { AuthenticatedRequest } from 'src/auth/types/authenticated-request.type';
+import { ParseBrPhonePipe } from 'src/user/pipes/format-br-phone.pipe';
+import { ResponseWorkTimeDto } from '../dto/work-time/response-work-time.dto';
+import { ParseEmailPipe } from 'src/user/pipes/format-email.pipe';
 import {
   CommonType,
   ParseOrderParamsPipe,
-} from "src/delivery/pipes/parse-order-params.pipe";
-import { WorkTime } from "../entities/work-time.entity";
-import { FindOptionsOrder, FindOptionsOrderValue } from "typeorm";
-import { workTimeOrderMap } from "src/common/data/entity-instructions/ordering";
+} from 'src/delivery/pipes/parse-order-params.pipe';
+import { WorkTime } from '../entities/work-time.entity';
+import { FindOptionsOrder, FindOptionsOrderValue } from 'typeorm';
+import { workTimeOrderMap } from 'src/common/data/entity-instructions/ordering';
 
 @Roles(Role.Admin)
-@Controller("work-time")
+@Controller('work-time')
 export class WorkTimeController {
   constructor(private readonly workTimeService: WorkTimeService) {}
 
   @Get()
   async findAll(
-    @Query("shift", new ParseEnumPipe(Shift, { optional: true })) shift: Shift,
-    @Query("isDefault", new ParseBoolPipe({ optional: true }))
+    @Query('shift', new ParseEnumPipe(Shift, { optional: true })) shift: Shift,
+    @Query('isDefault', new ParseBoolPipe({ optional: true }))
     isDefault: boolean,
-    @Query("isShared", new ParseBoolPipe({ optional: true }))
+    @Query('isShared', new ParseBoolPipe({ optional: true }))
     isShared: boolean,
-    @Query("nickname") nickname: string,
-    @Query("id", new ParseUUIDPipe({ optional: true })) id: string,
-    @Query("name") name: string,
-    @Query("lastName") lastName: string,
-    @Query("email", ParseEmailPipe) email: string,
-    @Query("phone", ParseBrPhonePipe) phone: string,
-    @Query("secondPhone", ParseBrPhonePipe) secondPhone: string,
+    @Query('nickname') nickname: string,
+    @Query('id', new ParseUUIDPipe({ optional: true })) id: string,
+    @Query('name') name: string,
+    @Query('lastName') lastName: string,
+    @Query('email', ParseEmailPipe) email: string,
+    @Query('phone', ParseBrPhonePipe) phone: string,
+    @Query('secondPhone', ParseBrPhonePipe) secondPhone: string,
     @Query(new ParseOrderParamsPipe<CommonType<WorkTime>>(workTimeOrderMap))
     orderParams: {
       [K in keyof FindOptionsOrder<WorkTime>]: FindOptionsOrderValue;
@@ -71,13 +71,13 @@ export class WorkTimeController {
       orderParams,
     );
     const parsedWorkTimes = workTimes.map(
-      (item) => new ResponseWorkTimeDto(item),
+      item => new ResponseWorkTimeDto(item),
     );
     return parsedWorkTimes;
   }
 
   @Roles(Role.Admin, Role.Operator, Role.Motoboy)
-  @Get("me")
+  @Get('me')
   async findMy(@Req() req: AuthenticatedRequest) {
     const workTime = await this.workTimeService.findMy(req.user);
 
@@ -86,27 +86,27 @@ export class WorkTimeController {
     }
 
     throw new NotFoundException(
-      "Usuário segue o horário do estabelecimento padrão",
+      'Usuário segue o horário do estabelecimento padrão',
     );
   }
 
-  @Get(":id")
-  async findOne(@Param("id", ParseUUIDPipe) id: string) {
+  @Get(':id')
+  async findOne(@Param('id', ParseUUIDPipe) id: string) {
     const workTime = await this.workTimeService.findOneByOrFail({ id }, true);
     return new ResponseWorkTimeDto(workTime);
   }
 
-  @Patch(":id")
+  @Patch(':id')
   async update(
-    @Param("id", ParseUUIDPipe) id: string,
+    @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: UpdateWorkTimeDto,
   ) {
     const workTime = await this.workTimeService.update(id, dto);
     return new ResponseWorkTimeDto(workTime);
   }
 
-  @Delete(":id")
-  async remove(@Param("id", ParseUUIDPipe) id: string) {
+  @Delete(':id')
+  async remove(@Param('id', ParseUUIDPipe) id: string) {
     const workTime = await this.workTimeService.remove(id);
     return new ResponseWorkTimeDto(workTime);
   }

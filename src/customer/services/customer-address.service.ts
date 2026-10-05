@@ -1,10 +1,10 @@
-import { AddressService } from "src/address/address.service";
-import { CustomerService } from "../services/customer.service";
-import { CreateCustomerDto } from "../dto/create-customer.dto";
-import { CreateAddressDto } from "src/address/dto/create-address.dto";
-import { transformToLowerCase } from "src/common/utils/transform-to-lower-case";
-import { Injectable, UnprocessableEntityException } from "@nestjs/common";
-import { DataSource } from "typeorm";
+import { AddressService } from 'src/address/address.service';
+import { CustomerService } from '../services/customer.service';
+import { CreateCustomerDto } from '../dto/create-customer.dto';
+import { CreateAddressDto } from 'src/address/dto/create-address.dto';
+import { transformToLowerCase } from 'src/common/utils/transform-to-lower-case';
+import { Injectable, UnprocessableEntityException } from '@nestjs/common';
+import { DataSource } from 'typeorm';
 
 @Injectable()
 export class CustomerAddressService {
@@ -15,11 +15,11 @@ export class CustomerAddressService {
   ) {}
 
   async create(customerDto: CreateCustomerDto, addressDto: CreateAddressDto) {
-    return this.dataSource.transaction(async (manager) => {
+    return this.dataSource.transaction(async manager => {
       const arrayDto = Object.entries(customerDto);
 
       arrayDto.forEach(([k, v]) => {
-        if (typeof v === "string") {
+        if (typeof v === 'string') {
           customerDto[k] = transformToLowerCase(v);
         }
       });
@@ -43,7 +43,7 @@ export class CustomerAddressService {
   }
 
   async addAddress(dto: CreateAddressDto, id: string) {
-    return this.dataSource.transaction(async (manager) => {
+    return this.dataSource.transaction(async manager => {
       const customer = await this.customerService.findOneByOrFail(
         { id },
         manager,
@@ -52,7 +52,7 @@ export class CustomerAddressService {
 
       if (customer.addresses.length >= 3) {
         throw new UnprocessableEntityException(
-          "Só é possível cadastrar 3 endereços no máximo",
+          'Só é possível cadastrar 3 endereços no máximo',
         );
       }
       if (wantsDefault) {
@@ -79,7 +79,7 @@ export class CustomerAddressService {
   }
 
   async removeAddress(id: string) {
-    return this.dataSource.transaction(async (manager) => {
+    return this.dataSource.transaction(async manager => {
       return this.addressService.remove(id, manager);
     });
   }

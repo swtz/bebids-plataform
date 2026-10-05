@@ -1,7 +1,7 @@
-import { ResponseAddressDto } from "src/address/dto/response-address.dto";
-import { Place } from "../entities/place.entity";
-import { ResponseWorkTimeDto } from "src/work-time/dto/work-time/response-work-time.dto";
-import { SmallResponseUserDto } from "src/user/dtos/user/small-response-user.dto";
+import { ResponseAddressDto } from 'src/address/dto/response-address.dto';
+import { Place } from '../entities/place.entity';
+import { ResponseWorkTimeDto } from 'src/work-time/dto/work-time/response-work-time.dto';
+import { SmallResponseUserDto } from 'src/user/dtos/user/small-response-user.dto';
 
 export class ResponsePlaceDto {
   readonly id: string;
@@ -30,7 +30,7 @@ export class ResponsePlaceDto {
     this.email = place.email;
     this.owners =
       place.owners.length > 0
-        ? place.owners.map((user) => {
+        ? place.owners.map(user => {
             return new SmallResponseUserDto(user);
           })
         : null;
@@ -40,7 +40,7 @@ export class ResponsePlaceDto {
       : null;
     this.workTimes =
       place.workTimes.length > 0
-        ? place.workTimes.map((workTime) => new ResponseWorkTimeDto(workTime))
+        ? place.workTimes.map(workTime => new ResponseWorkTimeDto(workTime))
         : null;
   }
 }

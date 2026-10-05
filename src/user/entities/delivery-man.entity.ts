@@ -7,17 +7,17 @@ import {
   OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
-} from "typeorm";
-import { Motorcycle } from "./motorcycle.entity";
-import { Tip } from "src/tip/entities/tip.entity";
-import { User } from "./user.entity";
+} from 'typeorm';
+import { Motorcycle } from './motorcycle.entity';
+import { Tip } from 'src/tip/entities/tip.entity';
+import { User } from './user.entity';
 
 @Entity()
 export class DeliveryMan {
-  @PrimaryGeneratedColumn("uuid")
+  @PrimaryGeneratedColumn('uuid')
   id!: string;
 
-  @Column("float")
+  @Column('float')
   daily!: number;
 
   @CreateDateColumn()
@@ -26,26 +26,26 @@ export class DeliveryMan {
   @UpdateDateColumn()
   updatedAt!: Date;
 
-  @OneToOne(() => Motorcycle, (motorcycle) => motorcycle.driver, {
+  @OneToOne(() => Motorcycle, motorcycle => motorcycle.driver, {
     nullable: true,
-    onDelete: "RESTRICT",
-    onUpdate: "RESTRICT",
+    onDelete: 'RESTRICT',
+    onUpdate: 'RESTRICT',
   })
   @JoinColumn()
   motorcycle!: Motorcycle | null;
 
-  @OneToOne(() => User, (user) => user.deliveryMan, {
+  @OneToOne(() => User, user => user.deliveryMan, {
     nullable: false,
-    onDelete: "CASCADE",
-    onUpdate: "CASCADE",
+    onDelete: 'CASCADE',
+    onUpdate: 'CASCADE',
   })
   @JoinColumn()
   user!: User;
 
-  @OneToMany(() => Tip, (tip) => tip.motoboy, {
+  @OneToMany(() => Tip, tip => tip.motoboy, {
     nullable: true,
-    onDelete: "SET NULL",
-    onUpdate: "SET NULL",
+    onDelete: 'SET NULL',
+    onUpdate: 'SET NULL',
   })
   tips!: Tip[] | null;
 }

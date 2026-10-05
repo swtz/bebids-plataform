@@ -1,5 +1,5 @@
-import { Motorcycle } from "src/user/entities/motorcycle.entity";
-import { SmallResponseUserDto } from "../user/small-response-user.dto";
+import { Motorcycle } from 'src/user/entities/motorcycle.entity';
+import { SmallResponseUserDto } from '../user/small-response-user.dto';
 
 export class ResponseMotorcycleDto {
   readonly id: string;

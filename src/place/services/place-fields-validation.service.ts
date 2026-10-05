@@ -1,9 +1,9 @@
-import { Injectable } from "@nestjs/common";
-import { CreatePlaceDto } from "../dto/create-place.dto";
-import { CreatePlaceDtoForValidator } from "../types/place-validator.type";
-import { PlaceService } from "../services/place.service";
-import { UpdatePlaceDto } from "../dto/update-place.dto";
-import { Place } from "../entities/place.entity";
+import { Injectable } from '@nestjs/common';
+import { CreatePlaceDto } from '../dto/create-place.dto';
+import { CreatePlaceDtoForValidator } from '../types/place-validator.type';
+import { PlaceService } from '../services/place.service';
+import { UpdatePlaceDto } from '../dto/update-place.dto';
+import { Place } from '../entities/place.entity';
 
 @Injectable()
 export class PlaceFieldsValidationService {

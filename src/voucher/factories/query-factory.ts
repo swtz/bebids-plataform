@@ -1,8 +1,8 @@
-import { User } from "src/user/entities/user.entity";
-import { Between, FindOperator, FindOptionsWhere } from "typeorm";
-import { Voucher } from "../enums/voucher.enum";
-import { Settlement } from "src/settlement/entities/settlement.entity";
-import { Payout } from "src/payout/entities/payout.entity";
+import { User } from 'src/user/entities/user.entity';
+import { Between, FindOperator, FindOptionsWhere } from 'typeorm';
+import { Voucher } from '../enums/voucher.enum';
+import { Settlement } from 'src/settlement/entities/settlement.entity';
+import { Payout } from 'src/payout/entities/payout.entity';
 
 export interface Query {
   createdAt?: FindOperator<Date>;
