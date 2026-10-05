@@ -2,28 +2,30 @@ import {
   ConflictException,
   Injectable,
   NotFoundException,
-} from '@nestjs/common';
-import { CreateIntervalTimeDto } from '../dto/interval-time/create-interval-time.dto';
-import { User } from 'src/user/entities/user.entity';
+} from "@nestjs/common";
+import { CreateIntervalTimeDto } from "../dto/interval-time/create-interval-time.dto";
+import { User } from "src/user/entities/user.entity";
 import {
   EntityManager,
   FindOptionsOrder,
   FindOptionsOrderValue,
   FindOptionsWhere,
   Repository,
-} from 'typeorm';
-import { IntervalTime } from '../entities/interval-time.entity';
-import { InjectRepository } from '@nestjs/typeorm';
-import { UpdateIntervalTimeDto } from '../dto/interval-time/update-interval-time.dto';
-import { generateDurationTime } from 'src/common/utils/generate-duration-time';
-import { WorkTime } from '../entities/work-time.entity';
-import { getTimeFromDateIsoString } from 'src/common/utils/get-time-from-date-iso-string';
+} from "typeorm";
+import { IntervalTime } from "../entities/interval-time.entity";
+import { InjectRepository } from "@nestjs/typeorm";
+import { UpdateIntervalTimeDto } from "../dto/interval-time/update-interval-time.dto";
+import { generateDurationTime } from "src/common/utils/generate-duration-time";
+import { WorkTime } from "../entities/work-time.entity";
+import { getTimeFromDateIsoString } from "src/common/utils/get-time-from-date-iso-string";
+import { DataSource } from "typeorm";
 
 @Injectable()
 export class IntervalTimeService {
   constructor(
     @InjectRepository(IntervalTime)
     private readonly intervalTimeRepository: Repository<IntervalTime>,
+    private readonly dataSource: DataSource,
   ) {}
   async create(
     { initHour, endHour }: CreateIntervalTimeDto,
@@ -33,7 +35,7 @@ export class IntervalTimeService {
   ) {
     if (user.intervalTime) {
       throw new ConflictException(
-        'Usuário já possui um Tempo de Intervalo registrado',
+        "Usuário já possui um Tempo de Intervalo registrado",
       );
     }
     const workTime = user.workTime ? user.workTime : placeDefaultWorkTime;
@@ -113,7 +115,7 @@ export class IntervalTimeService {
   ) {
     const intervalTime = await this.findOneBy(intervalTimeData, manager);
     if (!intervalTime) {
-      throw new NotFoundException('Tempo de intervalo não encontrado');
+      throw new NotFoundException("Tempo de intervalo não encontrado");
     }
     return intervalTime;
   }
@@ -125,13 +127,13 @@ export class IntervalTimeService {
     return repo.save(intervalTime);
   }
 
-  async remove(id: string, manager?: EntityManager) {
-    const repo = manager
-      ? manager.getRepository(IntervalTime)
-      : this.intervalTimeRepository;
-    const intervalTime = await this.findOneByOrFail({ id }, manager);
+  async remove(id: string, extManager?: EntityManager) {
+    return this.dataSource.transaction(async (intManager) => {
+      const manager = extManager ? extManager : intManager;
+      const intervalTime = await this.findOneByOrFail({ id }, manager);
 
-    await repo.delete({ id });
-    return intervalTime;
+      await this.intervalTimeRepository.delete({ id });
+      return intervalTime;
+    });
   }
 }

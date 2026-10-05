@@ -11,22 +11,28 @@ import {
   Post,
   Query,
   Req,
-} from '@nestjs/common';
-import { UserService } from '../services/user.service';
-import { CreateUserDto } from '../dtos/user/create-user.dto';
-import { UpdateUserDto } from '../dtos/user/update-user.dto';
-import { AuthenticatedRequest } from 'src/auth/types/authenticated-request.type';
-import { Roles } from 'src/common/role/decorators/roles.decorator';
-import { Role } from 'src/common/role/roles.enum';
-import { UpdatePasswordDto } from '../dtos/user/update-password.dto';
-import { ResponseUserDto } from '../dtos/user/response-user.dto';
-import { ParseBrPhonePipe } from '../pipes/format-br-phone.pipe';
-import { Public } from 'src/auth/decorators/public.decorator';
-import { UserFieldsValidationService } from '../services/user-fields-validation.service';
-import { User } from '../entities/user.entity';
-import { ParsePlaceCodePipe } from 'src/place/pipes/parse-place-code.pipe';
+} from "@nestjs/common";
+import { UserService } from "../services/user.service";
+import { CreateUserDto } from "../dtos/user/create-user.dto";
+import { UpdateUserDto } from "../dtos/user/update-user.dto";
+import { AuthenticatedRequest } from "src/auth/types/authenticated-request.type";
+import { Roles } from "src/common/role/decorators/roles.decorator";
+import { Role } from "src/common/role/roles.enum";
+import { UpdatePasswordDto } from "../dtos/user/update-password.dto";
+import { ResponseUserDto } from "../dtos/user/response-user.dto";
+import { ParseBrPhonePipe } from "../pipes/format-br-phone.pipe";
+import { Public } from "src/auth/decorators/public.decorator";
+import { UserFieldsValidationService } from "../services/user-fields-validation.service";
+import { ParsePlaceCodePipe } from "src/place/pipes/parse-place-code.pipe";
+import {
+  CommonType,
+  ParseOrderParamsPipe,
+} from "src/delivery/pipes/parse-order-params.pipe";
+import { Delivery } from "src/delivery/entities/delivery.entity";
+import { userOrderMap } from "src/common/data/entity-instructions/ordering";
+import { FindOptionsOrder, FindOptionsOrderValue } from "typeorm";
 
-@Controller('user')
+@Controller("user")
 @Roles(Role.Operator, Role.Motoboy, Role.Admin)
 export class UserController {
   constructor(
@@ -34,7 +40,7 @@ export class UserController {
     private readonly userFieldsValidationService: UserFieldsValidationService,
   ) {}
 
-  @Get('me')
+  @Get("me")
   async findMe(@Req() req: AuthenticatedRequest) {
     const user = await this.userService.findOneByOrFail({
       id: req.user.id,
@@ -43,30 +49,28 @@ export class UserController {
   }
 
   @Roles(Role.Operator, Role.Admin)
-  @Get(':id')
-  async findOne(@Param('id', ParseUUIDPipe) id: string) {
-    const user = await this.userService.findOneByOrFail({ id }, 'user-full'); // Frontend requires to display the user Vouchers
+  @Get(":id")
+  async findOne(@Param("id", ParseUUIDPipe) id: string) {
+    const user = await this.userService.findOneByOrFail({ id }, "user-full"); // Frontend requires to display the user Vouchers
     return new ResponseUserDto(user);
   }
 
   @Roles(Role.Operator, Role.Admin)
   @Get()
   async findAll(
-    @Query('role', new ParseEnumPipe(Role, { optional: true })) role: Role,
-    @Query('placeCode', ParsePlaceCodePipe) placeCode: string,
-    @Query('field')
-    field: keyof Pick<
-      User,
-      'createdAt' | 'updatedAt' | 'name' | 'lastName' | 'email'
-    >,
-    @Query('order') order: 'asc' | 'desc' | 'ASC' | 'DESC',
+    @Query("role", new ParseEnumPipe(Role, { optional: true })) role: Role,
+    @Query("placeCode", ParsePlaceCodePipe) placeCode: string,
+    @Query(new ParseOrderParamsPipe<CommonType<Delivery>>(userOrderMap))
+    orderParams: {
+      [K in keyof FindOptionsOrder<Delivery>]: FindOptionsOrderValue;
+    },
   ) {
     const users = await this.userService.findAll({
       role,
       placeCode,
-      orderParams: { [field]: order },
+      orderParams,
     });
-    const parsedUsers = users.map(user => new ResponseUserDto(user));
+    const parsedUsers = users.map((user) => new ResponseUserDto(user));
     return parsedUsers;
   }
 
@@ -74,14 +78,14 @@ export class UserController {
   @Public()
   @Post()
   async create(
-    @Body('phone', ParseBrPhonePipe) phone: string,
-    @Body('secondPhone', ParseBrPhonePipe) secondPhone: string,
-    @Body('role', new ParseEnumPipe(Role)) role: Role,
-    @Body('placeCode', ParsePlaceCodePipe) placeCode: string,
+    @Body("phone", ParseBrPhonePipe) phone: string,
+    @Body("secondPhone", ParseBrPhonePipe) secondPhone: string,
+    @Body("role", new ParseEnumPipe(Role)) role: Role,
+    @Body("placeCode", ParsePlaceCodePipe) placeCode: string,
     @Body() dto: CreateUserDto,
   ) {
     if (role === Role.Motoboy || dto.role === Role.Motoboy) {
-      throw new ForbiddenException('Acesso negado');
+      throw new ForbiddenException("Acesso negado");
     }
 
     await this.userFieldsValidationService.validateUniqueFields({
@@ -101,13 +105,13 @@ export class UserController {
     return new ResponseUserDto(user);
   }
 
-  @Patch('me')
+  @Patch("me")
   async updateMe(
     @Req() req: AuthenticatedRequest,
     @Body() dto: UpdateUserDto,
-    @Body('phone', ParseBrPhonePipe) phone: string,
-    @Body('secondPhone', ParseBrPhonePipe) secondPhone: string,
-    @Body('placeCode', ParsePlaceCodePipe) placeCode: string,
+    @Body("phone", ParseBrPhonePipe) phone: string,
+    @Body("secondPhone", ParseBrPhonePipe) secondPhone: string,
+    @Body("placeCode", ParsePlaceCodePipe) placeCode: string,
   ) {
     await this.userFieldsValidationService.validateUniqueFields({
       ...dto,
@@ -126,13 +130,13 @@ export class UserController {
   }
 
   @Roles(Role.Operator, Role.Admin)
-  @Patch(':id')
+  @Patch(":id")
   async update(
-    @Param('id', ParseUUIDPipe) id: string,
+    @Param("id", ParseUUIDPipe) id: string,
     @Body() dto: UpdateUserDto,
-    @Body('phone', ParseBrPhonePipe) phone: string,
-    @Body('secondPhone', ParseBrPhonePipe) secondPhone: string,
-    @Body('placeCode', ParsePlaceCodePipe) placeCode: string,
+    @Body("phone", ParseBrPhonePipe) phone: string,
+    @Body("secondPhone", ParseBrPhonePipe) secondPhone: string,
+    @Body("placeCode", ParsePlaceCodePipe) placeCode: string,
   ) {
     const user = await this.userService.findOneByOrFail({ id });
 
@@ -152,7 +156,7 @@ export class UserController {
     return new ResponseUserDto(updated);
   }
 
-  @Patch('me/password')
+  @Patch("me/password")
   async updatePassword(
     @Req() req: AuthenticatedRequest,
     @Body() dto: UpdatePasswordDto,
@@ -162,8 +166,8 @@ export class UserController {
   }
 
   @Roles(Role.Admin)
-  @Delete(':id')
-  async remove(@Param('id', ParseUUIDPipe) id: string) {
+  @Delete(":id")
+  async remove(@Param("id", ParseUUIDPipe) id: string) {
     const user = await this.userService.remove(id);
     return new ResponseUserDto(user);
   }

@@ -1,4 +1,4 @@
-import { DeliveryMan } from 'src/user/entities/delivery-man.entity';
+import { DeliveryMan } from "src/user/entities/delivery-man.entity";
 import {
   Column,
   CreateDateColumn,
@@ -6,14 +6,14 @@ import {
   ManyToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
-} from 'typeorm';
+} from "typeorm";
 
 @Entity()
 export class Tip {
-  @PrimaryGeneratedColumn('uuid')
+  @PrimaryGeneratedColumn("uuid")
   id!: string;
 
-  @Column('float')
+  @Column("float")
   amount!: number;
 
   @CreateDateColumn()
@@ -22,9 +22,9 @@ export class Tip {
   @UpdateDateColumn()
   updatedAt!: Date;
 
-  @ManyToOne(() => DeliveryMan, deliveryMan => deliveryMan.tips, {
-    onDelete: 'CASCADE',
-    onUpdate: 'CASCADE',
+  @ManyToOne(() => DeliveryMan, (deliveryMan) => deliveryMan.tips, {
+    onDelete: "CASCADE",
+    onUpdate: "CASCADE",
   })
   motoboy!: DeliveryMan;
 }

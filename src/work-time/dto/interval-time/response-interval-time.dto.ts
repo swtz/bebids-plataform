@@ -1,5 +1,5 @@
-import { IntervalTime } from 'src/work-time/entities/interval-time.entity';
-import { ResponseWorkTimeDto } from '../work-time/response-work-time.dto';
+import { IntervalTime } from "src/work-time/entities/interval-time.entity";
+import { ResponseWorkTimeDto } from "../work-time/response-work-time.dto";
 
 export class ResponseIntervalTimeDto {
   readonly id: string;

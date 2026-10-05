@@ -1,10 +1,10 @@
-import { UnprocessableEntityException } from '@nestjs/common';
+import { UnprocessableEntityException } from "@nestjs/common";
 import {
   EntityManager,
   EntityTarget,
   ObjectLiteral,
   Repository,
-} from 'typeorm';
+} from "typeorm";
 
 export async function setEntityRelationFieldAsNull<T extends ObjectLiteral>(
   entityTarget: EntityTarget<T>,
@@ -14,7 +14,7 @@ export async function setEntityRelationFieldAsNull<T extends ObjectLiteral>(
 ) {
   if (!manager) {
     throw new UnprocessableEntityException(
-      'Não foi possível prosseguir com a operação',
+      "Não foi possível prosseguir com a operação",
     );
   }
   await manager

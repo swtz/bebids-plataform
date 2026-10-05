@@ -1,5 +1,5 @@
-import { User } from 'src/user/entities/user.entity';
-import { FindOptionsRelations } from 'typeorm';
+import { User } from "src/user/entities/user.entity";
+import { FindOptionsRelations } from "typeorm";
 
 export const essencial: FindOptionsRelations<User> = {
   roles: true,

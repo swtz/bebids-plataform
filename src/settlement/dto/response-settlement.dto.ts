@@ -1,9 +1,8 @@
-import { WeekDay } from 'src/common/enums/weekDays.enum';
-import { ResponseVoucherDto } from 'src/voucher/dto/response-voucher.dto';
-import { Settlement } from '../entities/settlement.entity';
-import { ResponsePreviewSettlement } from '../types/response-preview-settlement.type';
-import { SmallResponseUserDto } from 'src/user/dtos/user/small-response-user.dto';
-import { MediumResponseWorkTimeDto } from 'src/work-time/dto/work-time/medium-response-work-time.dto';
+import { WeekDay } from "src/common/enums/weekDays.enum";
+import { Settlement } from "../entities/settlement.entity";
+import { ResponsePreviewSettlement } from "../types/response-preview-settlement.type";
+import { SmallResponseUserDto } from "src/user/dtos/user/small-response-user.dto";
+import { MediumResponseWorkTimeDto } from "src/work-time/dto/work-time/medium-response-work-time.dto";
 
 export class ResponseSettlementDto {
   readonly id?: string;
@@ -13,6 +12,7 @@ export class ResponseSettlementDto {
   readonly weekDay: WeekDay;
   readonly workDay: Date;
   readonly isClosed?: boolean;
+  readonly closingAt?: Date | null;
   readonly initValue?: number;
   readonly quantityDeliveries: number;
   readonly totalRemainingMotoboy: number;
@@ -26,7 +26,6 @@ export class ResponseSettlementDto {
   readonly operator: SmallResponseUserDto & {
     workTime: MediumResponseWorkTimeDto | null;
   };
-  readonly vouchers: ResponseVoucherDto[] | null;
 
   constructor(settlement: ResponsePreviewSettlement | Settlement) {
     if (settlement instanceof Settlement) {
@@ -34,10 +33,11 @@ export class ResponseSettlementDto {
       this.placeCode = settlement.placeCode;
       this.createdAt = settlement.createdAt;
       this.updatedAt = settlement.updatedAt;
-      this.initValue = settlement.initValue;
       this.description = settlement.description;
       this.isClosed = settlement.isClosed;
+      this.closingAt = settlement.closingAt;
     }
+    this.initValue = settlement.initValue;
     this.quantityDeliveries = settlement.quantityDeliveries;
     this.totalRemainingMotoboy = settlement.totalRemainingMotoboy;
     this.moneySubtotal = settlement.moneySubtotal;
@@ -54,9 +54,5 @@ export class ResponseSettlementDto {
         ? new MediumResponseWorkTimeDto(settlement.operator.workTime)
         : null,
     };
-    this.vouchers =
-      settlement.vouchers && settlement.vouchers.length > 0
-        ? settlement.vouchers.map(item => new ResponseVoucherDto(item))
-        : null;
   }
 }

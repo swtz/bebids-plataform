@@ -1,8 +1,8 @@
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
-import { EntityManager, Repository } from 'typeorm';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Role as RoleEntity } from './entities/role.entity';
-import { Role } from './roles.enum';
+import { Injectable, Logger, NotFoundException } from "@nestjs/common";
+import { EntityManager, Repository } from "typeorm";
+import { InjectRepository } from "@nestjs/typeorm";
+import { Role as RoleEntity } from "./entities/role.entity";
+import { Role } from "./roles.enum";
 
 @Injectable()
 export class RoleService {
@@ -43,7 +43,7 @@ export class RoleService {
     const role = await this.findOneByName(name, manager);
 
     if (!role) {
-      throw new NotFoundException('Essa função não existe');
+      throw new NotFoundException("Essa função não existe");
     }
 
     return role;

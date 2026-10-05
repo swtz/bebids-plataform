@@ -3,24 +3,32 @@ import {
   Injectable,
   NotFoundException,
   UnauthorizedException,
-} from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { EntityManager, FindOptionsWhere, Repository } from 'typeorm';
-import { Shift } from 'src/common/enums/work-shifts.enum';
-import { Place } from 'src/place/entities/place.entity';
-import { WorkTime } from '../entities/work-time.entity';
-import { CreateWorkTimeDto } from '../dto/work-time/create-work-time.dto';
-import { UpdateWorkTimeDto } from '../dto/work-time/update-work-time.dto';
-import { User } from 'src/user/entities/user.entity';
-import { full, essencial, tiny } from '../data/relations/work-time';
-import { generateDurationTime } from 'src/common/utils/generate-duration-time';
-import { getTimeFromDateIsoString } from 'src/common/utils/get-time-from-date-iso-string';
+} from "@nestjs/common";
+import { InjectRepository } from "@nestjs/typeorm";
+import {
+  EntityManager,
+  FindOptionsOrder,
+  FindOptionsOrderValue,
+  FindOptionsWhere,
+  Repository,
+} from "typeorm";
+import { Shift } from "src/common/enums/work-shifts.enum";
+import { Place } from "src/place/entities/place.entity";
+import { WorkTime } from "../entities/work-time.entity";
+import { CreateWorkTimeDto } from "../dto/work-time/create-work-time.dto";
+import { UpdateWorkTimeDto } from "../dto/work-time/update-work-time.dto";
+import { User } from "src/user/entities/user.entity";
+import { full, essencial, tiny } from "../data/relations/work-time";
+import { generateDurationTime } from "src/common/utils/generate-duration-time";
+import { getTimeFromDateIsoString } from "src/common/utils/get-time-from-date-iso-string";
+import { DataSource } from "typeorm";
 
 @Injectable()
 export class WorkTimeService {
   constructor(
     @InjectRepository(WorkTime)
     private readonly workTimeRepository: Repository<WorkTime>,
+    private readonly dataSource: DataSource,
   ) {}
 
   async create(
@@ -45,7 +53,7 @@ export class WorkTimeService {
     const workTime = await this.findOneByOrFail({ id }, false, manager);
     if (workTime.isShared) {
       throw new UnauthorizedException(
-        'Um estabelecimento possui esse horário.\n Não foi possível atualizar',
+        "Um estabelecimento possui esse horário.\n Não foi possível atualizar",
       );
     }
     if (dto.initHour && dto.endHour) {
@@ -108,7 +116,7 @@ export class WorkTimeService {
     const workTime = await this.findOneBy(workTimeData, relations, manager);
 
     if (!workTime) {
-      throw new NotFoundException('Esse horário de serviço não existe');
+      throw new NotFoundException("Esse horário de serviço não existe");
     }
 
     return workTime;
@@ -128,7 +136,7 @@ export class WorkTimeService {
     );
 
     if (!workTime) {
-      throw new NotFoundException('Esse horário de serviço não existe');
+      throw new NotFoundException("Esse horário de serviço não existe");
     }
 
     return workTime;
@@ -136,7 +144,7 @@ export class WorkTimeService {
 
   findDefaultFromPlace(place: Place) {
     const { workTimes } = place;
-    const workTime = workTimes.find(item => item.isDefault === true);
+    const workTime = workTimes.find((item) => item.isDefault === true);
     return workTime;
   }
 
@@ -145,7 +153,7 @@ export class WorkTimeService {
 
     if (!workTime) {
       throw new NotFoundException(
-        'Estabelecimento sem horário padrão definido',
+        "Estabelecimento sem horário padrão definido",
       );
     }
 
@@ -156,18 +164,23 @@ export class WorkTimeService {
     const { workTimes } = place;
 
     if (shift !== Shift.Custom) {
-      const workTime = workTimes.find(item => item.shift === shift);
+      const workTime = workTimes.find((item) => item.shift === shift);
 
       if (workTime) {
-        throw new ConflictException('O Estabelecimento já possui esse horário');
+        throw new ConflictException("O Estabelecimento já possui esse horário");
       }
     }
   }
 
-  async findAll(queryParams: FindOptionsWhere<WorkTime>) {
+  async findAll(
+    queryParams: FindOptionsWhere<WorkTime>,
+    orderParams: {
+      [K in keyof FindOptionsOrder<WorkTime>]: FindOptionsOrderValue;
+    },
+  ) {
     return this.workTimeRepository.find({
       where: queryParams,
-      order: { createdAt: 'DESC' },
+      order: orderParams,
       relations: tiny,
     });
   }
@@ -179,20 +192,20 @@ export class WorkTimeService {
     });
   }
 
-  async remove(id: string, manager?: EntityManager) {
-    const repo = manager
-      ? manager.getRepository(WorkTime)
-      : this.workTimeRepository;
-    const workTime = await this.findOneByOrFail({ id }, true, manager);
+  async remove(id: string, extManager?: EntityManager) {
+    return this.dataSource.transaction(async (intManager) => {
+      const manager = extManager ? extManager : intManager;
+      const workTime = await this.findOneByOrFail({ id }, true, manager);
 
-    if (workTime.isDefault || workTime.isShared) {
-      throw new UnauthorizedException(
-        'Esse horário de serviço pertence a algum estabelecimento',
-      );
-    }
+      if (workTime.isDefault || workTime.isShared) {
+        throw new UnauthorizedException(
+          "Esse horário de serviço pertence a algum estabelecimento",
+        );
+      }
 
-    await repo.delete({ id });
-    return workTime;
+      await this.workTimeRepository.delete({ id });
+      return workTime;
+    });
   }
 
   async save(workTimeData: Partial<WorkTime>, manager?: EntityManager) {

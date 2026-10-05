@@ -5,16 +5,16 @@ import {
   OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
-} from 'typeorm';
+} from "typeorm";
 import {
   paymentMethods,
   PaymentMethod as PaymentMethodEnum,
-} from '../enums/payment-methods.enum';
-import { Delivery } from './delivery.entity';
+} from "../enums/payment-methods.enum";
+import { Delivery } from "./delivery.entity";
 
 @Entity()
 export class PaymentMethod {
-  @PrimaryGeneratedColumn('uuid')
+  @PrimaryGeneratedColumn("uuid")
   id!: string;
 
   @Column({ enum: paymentMethods, unique: true })
@@ -26,6 +26,10 @@ export class PaymentMethod {
   @UpdateDateColumn()
   updatedAt!: Date;
 
-  @OneToMany(() => Delivery, delivery => delivery.paymentMethod)
-  deliveries!: Delivery[];
+  @OneToMany(() => Delivery, (delivery) => delivery.paymentMethod, {
+    nullable: true,
+    onDelete: "SET NULL",
+    onUpdate: "SET NULL",
+  })
+  deliveries!: Delivery[] | null;
 }

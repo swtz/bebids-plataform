@@ -7,13 +7,13 @@ import {
   OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
-} from 'typeorm';
-import { WorkTime } from './work-time.entity';
-import { User } from 'src/user/entities/user.entity';
+} from "typeorm";
+import { WorkTime } from "./work-time.entity";
+import { User } from "src/user/entities/user.entity";
 
 @Entity()
 export class IntervalTime {
-  @PrimaryGeneratedColumn('uuid')
+  @PrimaryGeneratedColumn("uuid")
   id!: string;
 
   @CreateDateColumn()
@@ -33,15 +33,15 @@ export class IntervalTime {
 
   @ManyToOne(() => WorkTime, {
     nullable: false,
-    onDelete: 'CASCADE',
-    onUpdate: 'CASCADE',
+    onDelete: "CASCADE",
+    onUpdate: "CASCADE",
   })
   workTime!: WorkTime;
 
-  @OneToOne(() => User, user => user.intervalTime, {
+  @OneToOne(() => User, (user) => user.intervalTime, {
     nullable: false,
-    onDelete: 'CASCADE',
-    onUpdate: 'CASCADE',
+    onDelete: "CASCADE",
+    onUpdate: "CASCADE",
   })
   @JoinColumn()
   user!: User;

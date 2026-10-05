@@ -3,19 +3,18 @@ import {
   Injectable,
   UnauthorizedException,
   UnprocessableEntityException,
-} from '@nestjs/common';
-import { PlaceService } from './place.service';
-import { UserService } from 'src/user/services/user.service';
-import { WorkTimeService } from 'src/work-time/services/work-time.service';
-import { User } from 'src/user/entities/user.entity';
-import { UpdateWorkTimeDto } from 'src/work-time/dto/work-time/update-work-time.dto';
-import { CreateWorkTimeDto } from 'src/work-time/dto/work-time/create-work-time.dto';
-import { CreateIntervalTimeDto } from 'src/work-time/dto/interval-time/create-interval-time.dto';
-import { IntervalTimeService } from 'src/work-time/services/interval-time.service';
-import { DataSource, FindOptionsWhere } from 'typeorm';
-import { generateDurationTime } from 'src/common/utils/generate-duration-time';
-import { WorkTime } from 'src/work-time/entities/work-time.entity';
-import { getTimeFromDateIsoString } from 'src/common/utils/get-time-from-date-iso-string';
+} from "@nestjs/common";
+import { PlaceService } from "./place.service";
+import { UserService } from "src/user/services/user.service";
+import { WorkTimeService } from "src/work-time/services/work-time.service";
+import { User } from "src/user/entities/user.entity";
+import { UpdateWorkTimeDto } from "src/work-time/dto/work-time/update-work-time.dto";
+import { CreateWorkTimeDto } from "src/work-time/dto/work-time/create-work-time.dto";
+import { CreateIntervalTimeDto } from "src/work-time/dto/interval-time/create-interval-time.dto";
+import { IntervalTimeService } from "src/work-time/services/interval-time.service";
+import { DataSource, EntityManager, FindOptionsWhere } from "typeorm";
+import { generateDurationTime } from "src/common/utils/generate-duration-time";
+import { getTimeFromDateIsoString } from "src/common/utils/get-time-from-date-iso-string";
 
 @Injectable()
 export class WorkTimePlaceUserService {
@@ -28,34 +27,28 @@ export class WorkTimePlaceUserService {
   ) {}
 
   async addToPlace(id: string, dto: CreateWorkTimeDto, user: User) {
-    return this.dataSource.transaction(async manager => {
+    return this.dataSource.transaction(async (manager) => {
       const place = await this.placeService.findOneByOrFail({ id }, manager);
-      const isOwner = place.owners.some(owner => owner.id === user.id);
+      const isOwner = place.owners.some((owner) => owner.id === user.id);
       if (!isOwner) {
-        throw new ForbiddenException('Acesso negado');
+        throw new ForbiddenException("Acesso negado");
       }
       if (place.workTimes.length >= 5) {
         throw new UnprocessableEntityException(
-          'Só é possível cadastrar 5 horários por estabelecimento',
+          "Só é possível cadastrar 5 horários por estabelecimento",
         );
       }
       this.workTimeService.failIfShiftExistsInPlace(place, dto.shift);
 
-      const workTime = await this.workTimeService.create(
-        { ...dto, isDefault: false },
-        true,
-        manager,
-      );
-      const defaultWorkTime =
-        this.workTimeService.findDefaultFromPlaceOrFail(place);
+      const workTime = await this.workTimeService.create(dto, true, manager);
+      if (workTime.isDefault) {
+        const defaultWorkTime =
+          this.workTimeService.findDefaultFromPlaceOrFail(place);
 
-      if (dto.isDefault) {
-        await manager
-          .getRepository(WorkTime)
-          .update({ id: defaultWorkTime.id }, { isDefault: false });
-        workTime.isDefault = true;
+        defaultWorkTime.isDefault = false;
+
+        await this.workTimeService.save(defaultWorkTime, manager);
       }
-
       place.workTimes.push(workTime);
 
       const created = await this.placeService.save(place, manager);
@@ -63,20 +56,27 @@ export class WorkTimePlaceUserService {
     });
   }
 
-  async updateShared(id: string, dto: UpdateWorkTimeDto, user: User) {
-    return this.dataSource.transaction(async manager => {
+  async updateShared(
+    id: string,
+    dto: UpdateWorkTimeDto,
+    user: User,
+    extManager?: EntityManager,
+  ) {
+    return this.dataSource.transaction(async (intManager) => {
+      const manager = extManager ? extManager : intManager;
       const workTime = await this.workTimeService.findOneByOrFail(
         { id, isShared: true },
         true,
         manager,
       );
       const { places } = workTime;
+      const wantsDefault = !!dto.isDefault;
 
       let isOwner = false;
       let info: { owner?: string; place?: string } = {};
       if (places.length > 0) {
-        places.forEach(place => {
-          isOwner = place.owners.some(owner => {
+        places.forEach((place) => {
+          isOwner = place.owners.some((owner) => {
             if (owner.id === user.id) {
               info = {
                 owner: owner.id,
@@ -88,25 +88,24 @@ export class WorkTimePlaceUserService {
         });
       }
       if (!isOwner) {
-        throw new UnauthorizedException('Acesso negado');
+        throw new UnauthorizedException("Acesso negado");
       }
       const place = await this.placeService.findOneByOrFail(
         { id: info.place },
         manager,
       );
-      if (dto.isDefault) {
+
+      if (wantsDefault) {
         const defaultWorkTime =
           this.workTimeService.findDefaultFromPlaceOrFail(place);
 
-        await this.workTimeService.save(
-          {
-            ...defaultWorkTime,
-            isDefault: false,
-          },
-          manager,
-        );
-        workTime.isDefault = dto.isDefault;
+        defaultWorkTime.isDefault = false;
+
+        await this.workTimeService.save(defaultWorkTime, manager);
+
+        workTime.isDefault = true;
       }
+
       if (dto.initHour && dto.endHour) {
         workTime.duration = generateDurationTime(dto.initHour, dto.endHour);
       } else if (dto.initHour) {
@@ -138,7 +137,7 @@ export class WorkTimePlaceUserService {
   }
 
   async removeShared(id: string, user: User) {
-    return this.dataSource.transaction(async manager => {
+    return this.dataSource.transaction(async (manager) => {
       const workTime = await this.workTimeService.findOneByOrFail(
         {
           id,
@@ -152,8 +151,8 @@ export class WorkTimePlaceUserService {
       let isOwner = false;
       let info: { owner?: string; place?: string } = {};
       if (places.length > 0) {
-        places.forEach(place => {
-          isOwner = place.owners.some(owner => {
+        places.forEach((place) => {
+          isOwner = place.owners.some((owner) => {
             if (owner.id === user.id) {
               info = {
                 owner: owner.id,
@@ -165,7 +164,7 @@ export class WorkTimePlaceUserService {
         });
       }
       if (!isOwner) {
-        throw new UnauthorizedException('Acesso negado');
+        throw new UnauthorizedException("Acesso negado");
       }
 
       const place = await this.placeService.findOneByOrFail(
@@ -180,7 +179,7 @@ export class WorkTimePlaceUserService {
 
       if (workTime.isDefault) {
         throw new ForbiddenException(
-          'Defina outro horário de serviço como padrão antes de remover esse',
+          "Defina outro horário de serviço como padrão antes de remover esse",
         );
       }
 
@@ -198,7 +197,7 @@ export class WorkTimePlaceUserService {
   }
 
   async setToUser(id: string, dto: CreateWorkTimeDto) {
-    return this.dataSource.transaction(async manager => {
+    return this.dataSource.transaction(async (manager) => {
       const user = await this.userService.findOneByOrFail(
         { id },
         undefined,
@@ -228,7 +227,7 @@ export class WorkTimePlaceUserService {
   }
 
   async setSharedToUser(userId: string, workTimeId: string) {
-    return this.dataSource.transaction(async manager => {
+    return this.dataSource.transaction(async (manager) => {
       const user = await this.userService.findOneByOrFail(
         { id: userId },
         undefined,
@@ -264,8 +263,8 @@ export class WorkTimePlaceUserService {
     user: User,
     { initHour, endHour }: CreateIntervalTimeDto,
   ) {
-    return this.dataSource.transaction(async manager => {
-      const code = process.env.DEFAULT_PLACE_CODE || 'first';
+    return this.dataSource.transaction(async (manager) => {
+      const code = process.env.DEFAULT_PLACE_CODE || "first";
       const place = await this.placeService.findOneByOrFail({ code }, manager);
       const workTime = user.workTime
         ? user.workTime

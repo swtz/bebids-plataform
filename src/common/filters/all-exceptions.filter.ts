@@ -4,8 +4,8 @@ import {
   HttpException,
   HttpStatus,
   Logger,
-} from '@nestjs/common';
-import { Request, Response } from 'express';
+} from "@nestjs/common";
+import { Request, Response } from "express";
 
 export class AllExceptionsFilter implements ExceptionFilter {
   private readonly logger = new Logger(AllExceptionsFilter.name);
@@ -15,8 +15,8 @@ export class AllExceptionsFilter implements ExceptionFilter {
     const response = ctx.getResponse<Response>();
     const request = ctx.getRequest<Request>();
     const isHttpException = exception instanceof HttpException;
-    const defaultMessage = 'Internal Server Error';
-    const defaultError = 'Internal Server Error';
+    const defaultMessage = "Internal Server Error";
+    const defaultError = "Internal Server Error";
 
     let status = HttpStatus.INTERNAL_SERVER_ERROR;
     let messages: string[] = [defaultMessage];
@@ -26,54 +26,54 @@ export class AllExceptionsFilter implements ExceptionFilter {
       status = exception.getStatus();
       const responseData = exception.getResponse();
 
-      if (typeof responseData === 'string') {
+      if (typeof responseData === "string") {
         messages = [responseData];
       }
 
-      if (typeof responseData === 'object' && responseData !== null) {
+      if (typeof responseData === "object" && responseData !== null) {
         const { message, error } = responseData as Record<string, any>;
 
         if (Array.isArray(message)) {
           messages = message as string[];
-        } else if (typeof message === 'string') {
+        } else if (typeof message === "string") {
           messages = [message];
         }
 
-        if (typeof error === 'string') {
+        if (typeof error === "string") {
           errorName = error;
         }
       }
 
-      this.logger.warn(`${status} - ${errorName}: ${messages.join(' | ')}`);
+      this.logger.warn(`${status} - ${errorName}: ${messages.join(" | ")}`);
     } else if (
-      typeof exception === 'object' &&
+      typeof exception === "object" &&
       exception !== null &&
-      'code' in exception
+      "code" in exception
     ) {
       const dbError = exception as Record<string, any>;
 
       switch (dbError.code) {
-        case '23505':
+        case "23505":
           status = HttpStatus.CONFLICT;
-          messages = ['Resource already exists'];
-          errorName = 'Conflict';
-          this.logger.error('Database error', dbError?.stack || 'sem stack');
+          messages = ["Resource already exists"];
+          errorName = "Conflict";
+          this.logger.error("Database error", dbError?.stack || "sem stack");
           break;
 
-        case '23503':
+        case "23503":
           status = HttpStatus.INTERNAL_SERVER_ERROR;
-          messages = ['ENTITY FIELD ERROR'];
-          errorName = 'Internal Server Error';
-          this.logger.error('Database error', dbError?.stack || 'sem stack');
+          messages = ["ENTITY FIELD ERROR"];
+          errorName = "Internal Server Error";
+          this.logger.error("Database error", dbError?.stack || "sem stack");
           break;
 
         default:
-          this.logger.error('Database error', dbError?.stack || 'sem stack');
+          this.logger.error("Database error", dbError?.stack || "sem stack");
       }
     } else {
       this.logger.error(
-        'Unexpected internal error',
-        exception instanceof Error ? exception.stack : 'sem stack',
+        "Unexpected internal error",
+        exception instanceof Error ? exception.stack : "sem stack",
       );
     }
 

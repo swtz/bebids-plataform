@@ -1,10 +1,10 @@
-import { Delivery } from '../entities/delivery.entity';
-import { ResponseAddressDto } from 'src/address/dto/response-address.dto';
-import { Tip } from 'src/tip/entities/tip.entity';
-import { SmallResponseCustomerType } from 'src/customer/types/customer.type';
-import { SmallResponseMotorcycleDto } from 'src/user/dtos/motorcycle/small-response-motorcycle.dto';
-import { MediumResponseWorkTimeDto } from 'src/work-time/dto/work-time/medium-response-work-time.dto';
-import { SmallResponseUserDto } from 'src/user/dtos/user/small-response-user.dto';
+import { Delivery } from "../entities/delivery.entity";
+import { ResponseAddressDto } from "src/address/dto/response-address.dto";
+import { Tip } from "src/tip/entities/tip.entity";
+import { SmallResponseCustomerType } from "src/customer/types/customer.type";
+import { SmallResponseMotorcycleDto } from "src/user/dtos/motorcycle/small-response-motorcycle.dto";
+import { MediumResponseWorkTimeDto } from "src/work-time/dto/work-time/medium-response-work-time.dto";
+import { SmallResponseUserDto } from "src/user/dtos/user/small-response-user.dto";
 
 export class ResponseDeliveryDto {
   readonly id: string;
@@ -17,7 +17,8 @@ export class ResponseDeliveryDto {
   readonly isPaid: boolean;
   readonly motorcycleLicensePlate: string;
   readonly placeCode: string;
-  readonly tip: Pick<Tip, 'id' | 'amount'> | null;
+  readonly change: number | null;
+  readonly tip: Pick<Tip, "id" | "amount"> | null;
   readonly operator: SmallResponseUserDto | null;
   readonly motoboy:
     | (SmallResponseUserDto & {
@@ -33,12 +34,14 @@ export class ResponseDeliveryDto {
     this.description = delivery.description;
     this.totalPurchase = delivery.totalPurchase;
     this.deliveryTax = delivery.deliveryTax;
-    this.paymentMethod = delivery?.paymentMethod.name;
+    this.paymentMethod =
+      delivery.paymentMethod !== null ? delivery.paymentMethod.name : null;
     this.isPaid = delivery.isPaid;
     this.createdAt = delivery.createdAt;
     this.updatedAt = delivery.updatedAt;
     this.motorcycleLicensePlate = delivery.motorcycleLicensePlate;
     this.placeCode = delivery.placeCode;
+    this.change = delivery.change;
     this.tip = delivery.tip
       ? {
           id: delivery.tip.id,

@@ -1,6 +1,6 @@
-import { WeekDay, weekDays } from 'src/common/enums/weekDays.enum';
-import { DeliveryMan } from 'src/user/entities/delivery-man.entity';
-import { Voucher } from 'src/voucher/entities/voucher.entity';
+import { WeekDay, weekDays } from "src/common/enums/weekDays.enum";
+import { DeliveryMan } from "src/user/entities/delivery-man.entity";
+import { Voucher } from "src/voucher/entities/voucher.entity";
 import {
   Column,
   CreateDateColumn,
@@ -9,32 +9,32 @@ import {
   OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
-} from 'typeorm';
+} from "typeorm";
 
 @Entity()
 export class Payout {
-  @PrimaryGeneratedColumn('uuid')
+  @PrimaryGeneratedColumn("uuid")
   id!: string;
 
-  @Column('float')
+  @Column("float")
   totalDeliveries!: number;
 
   @Column()
   quantityDeliveries!: number;
 
-  @Column('float')
+  @Column("float")
   motoboyDaily!: number;
 
-  @Column('float')
+  @Column("float")
   motoboyTips!: number;
 
-  @Column('float')
+  @Column("float")
   subtotal!: number;
 
-  @Column('float')
+  @Column("float")
   totalSpending!: number;
 
-  @Column('float')
+  @Column("float")
   total!: number;
 
   @Column({ default: false })
@@ -57,15 +57,15 @@ export class Payout {
 
   @ManyToOne(() => DeliveryMan, {
     nullable: false,
-    onDelete: 'CASCADE',
-    onUpdate: 'CASCADE',
+    onDelete: "CASCADE",
+    onUpdate: "CASCADE",
   })
   motoboy!: DeliveryMan;
 
-  @OneToMany(() => Voucher, voucher => voucher.payout, {
+  @OneToMany(() => Voucher, (voucher) => voucher.payout, {
     nullable: true,
-    onDelete: 'SET NULL',
-    onUpdate: 'SET NULL',
+    onDelete: "SET NULL",
+    onUpdate: "SET NULL",
   })
   vouchers!: Voucher[] | null;
 }

@@ -1,9 +1,9 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
-import { HashingService } from 'src/common/hashing/hashing.service';
-import { UserService } from 'src/user/services/user.service';
-import { LoginDto } from './dto/login.dto';
-import { JwtPayload } from './types/jwt-payload.type';
+import { Injectable, UnauthorizedException } from "@nestjs/common";
+import { JwtService } from "@nestjs/jwt";
+import { HashingService } from "src/common/hashing/hashing.service";
+import { UserService } from "src/user/services/user.service";
+import { LoginDto } from "./dto/login.dto";
+import { JwtPayload } from "./types/jwt-payload.type";
 
 @Injectable()
 export class AuthService {
@@ -14,12 +14,12 @@ export class AuthService {
   ) {}
 
   async login(dto: LoginDto) {
-    const email = dto['email'];
-    const nickname = dto['nickname'];
-    const phone = dto['phone'];
+    const email = dto["email"];
+    const nickname = dto["nickname"];
+    const phone = dto["phone"];
 
     const user = await this.userService.findOneBy({ email, nickname, phone });
-    const error = new UnauthorizedException('Informações inválidas');
+    const error = new UnauthorizedException("Informações inválidas");
 
     if (!user) {
       throw error;
@@ -36,7 +36,7 @@ export class AuthService {
 
     const jwtPayload: JwtPayload = {
       sub: user.id,
-      roles: user.roles.map(r => `${r.name}`),
+      roles: user.roles.map((r) => `${r.name}`),
     };
     const accessToken = await this.jwtService.signAsync(jwtPayload);
 

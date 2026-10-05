@@ -2,18 +2,18 @@ import {
   ExecutionContext,
   Injectable,
   UnauthorizedException,
-} from '@nestjs/common';
-import { Reflector } from '@nestjs/core';
-import { JsonWebTokenError } from '@nestjs/jwt';
-import { AuthGuard } from '@nestjs/passport';
-import { ROLES_KEY } from 'src/common/role/decorators/roles.decorator';
-import { Role } from 'src/common/role/roles.enum';
-import { User } from 'src/user/entities/user.entity';
-import { IS_PUBLIC_KEY } from '../decorators/public.decorator';
-import { Observable } from 'rxjs';
+} from "@nestjs/common";
+import { Reflector } from "@nestjs/core";
+import { JsonWebTokenError } from "@nestjs/jwt";
+import { AuthGuard } from "@nestjs/passport";
+import { ROLES_KEY } from "src/common/role/decorators/roles.decorator";
+import { Role } from "src/common/role/roles.enum";
+import { User } from "src/user/entities/user.entity";
+import { IS_PUBLIC_KEY } from "../decorators/public.decorator";
+import { Observable } from "rxjs";
 
 @Injectable()
-export class JwtAuthGuard extends AuthGuard('jwt') {
+export class JwtAuthGuard extends AuthGuard("jwt") {
   constructor(private readonly reflector: Reflector) {
     super(reflector);
   }
@@ -40,7 +40,7 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
     status?: any,
   ): TUser {
     if (!user || info instanceof JsonWebTokenError) {
-      throw new UnauthorizedException('Você precisa fazer login');
+      throw new UnauthorizedException("Você precisa fazer login");
     }
 
     const requiredRoles = this.reflector.getAllAndOverride<Role[]>(ROLES_KEY, [
@@ -52,11 +52,11 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
       return super.handleRequest(err, user, info, context, status);
     }
 
-    const roles = user.roles.map(role => role.name);
-    const userRole = roles.some(role => requiredRoles.includes(role));
+    const roles = user.roles.map((role) => role.name);
+    const userRole = roles.some((role) => requiredRoles.includes(role));
 
     if (!userRole) {
-      throw new UnauthorizedException('Acesso negado');
+      throw new UnauthorizedException("Acesso negado");
     }
 
     return super.handleRequest(err, user, info, context, status);

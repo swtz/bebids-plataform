@@ -5,28 +5,25 @@ import {
   NotFoundException,
   UnauthorizedException,
   UnprocessableEntityException,
-} from '@nestjs/common';
+} from "@nestjs/common";
 import {
   FindOptionsOrder,
   Repository,
   FindOptionsOrderValue,
   FindOptionsWhere,
-} from 'typeorm';
-import { Settlement } from './entities/settlement.entity';
-import { InjectRepository } from '@nestjs/typeorm';
-import { DeliveryService } from 'src/delivery/delivery.service';
-import { UserService } from 'src/user/services/user.service';
-import { VoucherService } from 'src/voucher/voucher.service';
-import { User } from 'src/user/entities/user.entity';
-import { weekDays } from 'src/common/enums/weekDays.enum';
-import { setDecimalPlaces } from 'src/common/utils/set-decimal-places';
-import { PaymentMethod } from 'src/delivery/enums/payment-methods.enum';
-import voucherRelations from '../voucher/data/relations/voucher';
-import { Role } from 'src/common/role/roles.enum';
-import { Voucher } from 'src/voucher/enums/voucher.enum';
-import { WorkTimeDateService } from 'src/place/services/work-time-date.service';
-import { getUnixTime } from 'date-fns';
-import { ResponsePreviewSettlement } from './types/response-preview-settlement.type';
+} from "typeorm";
+import { Settlement } from "./entities/settlement.entity";
+import { InjectRepository } from "@nestjs/typeorm";
+import { DeliveryService } from "src/delivery/delivery.service";
+import { UserService } from "src/user/services/user.service";
+import { User } from "src/user/entities/user.entity";
+import { weekDays } from "src/common/enums/weekDays.enum";
+import { setDecimalPlaces } from "src/common/utils/set-decimal-places";
+import { PaymentMethod } from "src/delivery/enums/payment-methods.enum";
+import { Role } from "src/common/role/roles.enum";
+import { WorkTimeDateService } from "src/place/services/work-time-date.service";
+import { getUnixTime } from "date-fns";
+import { ResponsePreviewSettlement } from "./types/response-preview-settlement.type";
 
 @Injectable()
 export class SettlementService {
@@ -34,29 +31,10 @@ export class SettlementService {
     @InjectRepository(Settlement)
     private readonly settlementRepository: Repository<Settlement>,
     private readonly deliveryService: DeliveryService,
-    private readonly voucherService: VoucherService,
     private readonly userService: UserService,
     private readonly workTimeDateService: WorkTimeDateService,
   ) {}
 
-  // método responsável pelos cálculos do caixa
-  // leva em conta um caixa lançado para
-  // UM Operator && UM WorkDay, ou seja,
-  // o sistema só permite UM lançamento por dia
-
-  // Fluxo da funcionalidade de troco:
-  // TELE-VENDAS insere:
-  //// paymentMethod === 'money'
-  //// `totalPurchase`
-  //// `deliveryTax`
-  //// change > 0 || change !== null
-  ////// change = 100 // de fato, 100 representa o valor em dinheiro que
-  ///// o motoboy RECEBERÁ, logo → totalRemainingMotoboy += change (?)
-  //// Assim, o valor fica PENDENTE até que o TELE-VENDAS atualize
-  //// o status da Delivery, a saber Delivery.isPaid = true;
-
-  // Há anotações sobre uma possível implementação do
-  // "fechamento parcial" do caixa
   async preview(
     userData: FindOptionsWhere<User>,
     from: Date,
@@ -64,12 +42,12 @@ export class SettlementService {
   ): Promise<ResponsePreviewSettlement> {
     const operator = await this.userService.findOneByOrFail(
       userData,
-      'motoboy-essencial',
+      "motoboy-essencial",
     );
 
     if (operator.deliveryMan) {
       throw new UnprocessableEntityException(
-        'Motoboys não possuem caixa para fechar',
+        "Motoboys não possuem caixa para fechar",
       );
     }
 
@@ -77,107 +55,98 @@ export class SettlementService {
       workDay: from,
       operator: { id: operator.id },
     });
-
-    const vouchers = await this.voucherService.findAll({
-      from,
-      to,
-      type: Voucher.User,
-      userData,
-    });
+    const [lastClosed] = await this.findAll(
+      {
+        operator: userData,
+        workDay: from,
+        isClosed: true,
+      },
+      { createdAt: "DESC" },
+    );
+    const newFrom = lastClosed?.closingAt ? lastClosed.closingAt : from;
     const deliveries = await this.deliveryService.findAll({
-      from,
+      from: newFrom,
       to,
       type: Role.Operator,
       userData,
     });
 
-    const settlement = {
+    const settlement: ResponsePreviewSettlement = {
       weekDay: weekDays[from.getDay()],
       workDay: from,
-      initValue: exists !== null ? exists.initValue : undefined,
+      initValue: 0,
       quantityDeliveries: deliveries.length,
       totalRemainingMotoboy: 0,
       subtotal: 0,
       moneySubtotal: 0,
       cardSubtotal: 0,
       pixSubtotal: 0,
-      currentTotal: exists !== null ? exists.currentTotal : 0,
-      expectedTotal: exists !== null ? exists.expectedTotal : 0,
-      description: exists !== null ? exists.description : undefined,
+      currentTotal: 0,
+      expectedTotal: 0,
+      description: undefined,
       operator,
-      vouchers,
     };
 
-    const generatePrefix = (name: PaymentMethod) => {
+    if (exists && !exists.isClosed) {
+      settlement.initValue = exists.initValue;
+      settlement.description = exists.description;
+      settlement.currentTotal = exists.initValue;
+      settlement.expectedTotal = exists.initValue;
+    }
+
+    const generatePrefix = (name: PaymentMethod | undefined) => {
+      if (!name) {
+        return null;
+      }
+
       const prefix =
         name === PaymentMethod.Credit || name === PaymentMethod.Debit
-          ? 'card'
+          ? "card"
           : name;
       return prefix;
     };
 
     function sumPaymentMethodSubtotal(
-      prefix: PaymentMethod | 'card',
+      prefix: PaymentMethod | "card" | null | undefined,
       value: number,
     ) {
+      if (!prefix) {
+        return null;
+      }
+
       const prop = `${prefix}Subtotal`;
       // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
       settlement[prop] = setDecimalPlaces(settlement[prop] + value, 2);
     }
 
-    if (deliveries.length > 1) {
+    if (deliveries.length > 0) {
       settlement.subtotal = await this.deliveryService.sumTotalPurchaseCol({
         userData,
-        from,
+        from: newFrom,
         to,
       });
+      deliveries.forEach((delivery) => {
+        sumPaymentMethodSubtotal(
+          generatePrefix(delivery.paymentMethod?.name),
+          delivery.totalPurchase,
+        );
 
-      deliveries.forEach(delivery => {
-        const { name } = delivery.paymentMethod;
-        sumPaymentMethodSubtotal(generatePrefix(name), delivery.totalPurchase);
+        if (
+          delivery.paymentMethod?.name === PaymentMethod.Money &&
+          delivery.change
+        ) {
+          const bagValue = delivery.change - delivery.totalPurchase;
+          if (!delivery.isPaid) {
+            settlement.totalRemainingMotoboy += delivery.change;
+            settlement.currentTotal -= bagValue;
+          } else {
+            settlement.totalRemainingMotoboy -= 0;
+            settlement.currentTotal += delivery.totalPurchase;
+          }
+        }
       });
-    } else if (deliveries.length === 1) {
-      const [delivery] = deliveries;
-      const { name } = delivery.paymentMethod;
-
-      sumPaymentMethodSubtotal(generatePrefix(name), delivery.totalPurchase);
-      settlement.subtotal = delivery.totalPurchase;
     }
-
-    settlement.totalRemainingMotoboy =
-      await this.deliveryService.sumTotalPurchaseCol({
-        userData,
-        from,
-        to,
-        isPaid: false,
-      });
-
-    const currentTotal = setDecimalPlaces(
-      settlement.subtotal - settlement.totalRemainingMotoboy,
-      2,
-    );
-    const expectedTotal = setDecimalPlaces(
-      currentTotal + settlement.totalRemainingMotoboy,
-      2,
-    );
-
-    if (exists) {
-      settlement.currentTotal = setDecimalPlaces(
-        exists.initValue + currentTotal,
-        2,
-      );
-
-      settlement.expectedTotal = setDecimalPlaces(
-        exists.initValue + expectedTotal,
-        2,
-      );
-
-      return settlement;
-    }
-
-    settlement.currentTotal += currentTotal;
-    settlement.expectedTotal += expectedTotal;
-
+    settlement.expectedTotal += settlement.subtotal;
     return settlement;
   }
 
@@ -192,7 +161,20 @@ export class SettlementService {
       operator: { id: settlementData.operator.id },
     });
 
-    if (exists) {
+    const [lastClosed] = await this.findAll(
+      {
+        operator: { id: settlementData.operator.id },
+        workDay: settlementData.workDay,
+        isClosed: true,
+      },
+      { createdAt: "DESC" },
+    );
+
+    if (exists && !lastClosed) {
+      throw new ConflictException(
+        `Finalize o caixa anterior para abrir outro.\nOperador: ${exists.operator.name}`,
+      );
+    } else if (exists && !exists.isClosed) {
       throw new ConflictException(
         `Já foi criado um caixa para esse dia.\nOperador: ${exists.operator.name}`,
       );
@@ -220,7 +202,7 @@ export class SettlementService {
     const settlement = await this.findOneByOrFail({ id });
 
     if (settlement.isClosed) {
-      throw new UnauthorizedException('Caixa fechado. Não é possível alterar');
+      throw new UnauthorizedException("Caixa fechado. Não é possível alterar");
     }
 
     const { workDay: initDate, operator } = settlement;
@@ -232,7 +214,7 @@ export class SettlementService {
 
     if (getUnixTime(initDate) > getUnixTime(to)) {
       throw new BadRequestException(
-        'A data final não pode ser maior do que a data inicial',
+        "A data inicial não pode ser maior do que a data final",
       );
     }
 
@@ -252,6 +234,11 @@ export class SettlementService {
 
     settlement.isClosed = flag;
 
+    if (flag) {
+      settlement.closingAt = new Date();
+    } else {
+      settlement.closingAt = null;
+    }
     const updated = await this.save(settlement);
 
     return this.findOneByOrFail({ id: updated.id });
@@ -261,7 +248,7 @@ export class SettlementService {
     const settlement = await this.findOneByOrFail({ id });
     if (settlement.isClosed) {
       throw new UnauthorizedException(
-        'Não é possível atualizar um caixa fechado',
+        "Não é possível atualizar um caixa fechado",
       );
     }
     settlement.placeCode = placeCode ?? settlement.placeCode;
@@ -273,7 +260,7 @@ export class SettlementService {
     const settlement = await this.findOneBy(settlementData);
 
     if (!settlement) {
-      throw new NotFoundException('Caixa não encontrado');
+      throw new NotFoundException("Caixa não encontrado");
     }
 
     return settlement;
@@ -284,7 +271,6 @@ export class SettlementService {
       where: settlementData,
       relations: {
         operator: { workTime: true },
-        vouchers: voucherRelations,
       },
     });
   }
@@ -334,7 +320,7 @@ export class SettlementService {
     const settlement = await this.findOneByOrFail({ id });
 
     if (settlement.isClosed) {
-      throw new UnauthorizedException('Caixa fechado.\nNão é possível apagar');
+      throw new UnauthorizedException("Caixa fechado.\nNão é possível apagar");
     }
 
     await this.settlementRepository.delete({ id });

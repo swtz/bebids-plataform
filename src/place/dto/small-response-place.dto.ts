@@ -1,4 +1,4 @@
-import { Place } from '../entities/place.entity';
+import { Place } from "../entities/place.entity";
 
 export class SmallResponsePlaceDto {
   readonly id: string;

@@ -1,7 +1,7 @@
-import { Address } from 'src/address/entities/address.entity';
-import { Customer } from 'src/customer/entities/customer.entity';
-import { User } from 'src/user/entities/user.entity';
-import { DeliveryMan } from 'src/user/entities/delivery-man.entity';
+import { Address } from "src/address/entities/address.entity";
+import { Customer } from "src/customer/entities/customer.entity";
+import { User } from "src/user/entities/user.entity";
+import { DeliveryMan } from "src/user/entities/delivery-man.entity";
 import {
   Column,
   CreateDateColumn,
@@ -11,23 +11,26 @@ import {
   OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
-} from 'typeorm';
-import { PaymentMethod } from './payment-method.entity';
-import { Tip } from 'src/tip/entities/tip.entity';
+} from "typeorm";
+import { PaymentMethod } from "./payment-method.entity";
+import { Tip } from "src/tip/entities/tip.entity";
 
 @Entity()
 export class Delivery {
-  @PrimaryGeneratedColumn('uuid')
+  @PrimaryGeneratedColumn("uuid")
   id!: string;
 
-  @Column({ length: 150, nullable: true })
-  description!: string;
+  @Column({ type: "varchar", length: 150, nullable: true })
+  description!: string | null;
 
-  @Column('float')
+  @Column("float")
   totalPurchase!: number;
 
-  @Column('float')
+  @Column("float")
   deliveryTax!: number;
+
+  @Column({ type: "float", nullable: true })
+  change!: number | null;
 
   @Column({ default: false })
   isPaid!: boolean;
@@ -46,27 +49,44 @@ export class Delivery {
 
   @OneToOne(() => Tip, {
     nullable: true,
-    onDelete: 'SET NULL',
-    onUpdate: 'SET NULL',
+    onDelete: "SET NULL",
+    onUpdate: "SET NULL",
   })
   @JoinColumn()
-  tip!: Tip;
+  tip!: Tip | null;
 
-  @ManyToOne(() => PaymentMethod, paymentMethod => paymentMethod.deliveries, {
-    onDelete: 'SET NULL',
+  @ManyToOne(() => PaymentMethod, (paymentMethod) => paymentMethod.deliveries, {
     nullable: true,
+    onDelete: "SET NULL",
+    onUpdate: "SET NULL",
   })
-  paymentMethod!: PaymentMethod;
+  paymentMethod!: PaymentMethod | null;
 
-  @ManyToOne(() => User, { onDelete: 'SET NULL', nullable: true })
-  operator!: User;
+  @ManyToOne(() => User, {
+    nullable: true,
+    onDelete: "SET NULL",
+    onUpdate: "SET NULL",
+  })
+  operator!: User | null;
 
-  @ManyToOne(() => DeliveryMan, { onDelete: 'SET NULL', nullable: true })
-  motoboy!: DeliveryMan;
+  @ManyToOne(() => DeliveryMan, {
+    nullable: true,
+    onDelete: "SET NULL",
+    onUpdate: "SET NULL",
+  })
+  motoboy!: DeliveryMan | null;
 
-  @ManyToOne(() => Customer, { onDelete: 'SET NULL', nullable: true })
-  customer!: Customer;
+  @ManyToOne(() => Customer, {
+    nullable: true,
+    onDelete: "SET NULL",
+    onUpdate: "SET NULL",
+  })
+  customer!: Customer | null;
 
-  @ManyToOne(() => Address, { onDelete: 'SET NULL', nullable: true })
-  address!: Address;
+  @ManyToOne(() => Address, {
+    nullable: true,
+    onDelete: "SET NULL",
+    onUpdate: "SET NULL",
+  })
+  address!: Address | null;
 }

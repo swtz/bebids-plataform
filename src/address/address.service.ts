@@ -3,27 +3,29 @@ import {
   Injectable,
   NotFoundException,
   UnprocessableEntityException,
-} from '@nestjs/common';
+} from "@nestjs/common";
 import {
   EntityManager,
   FindOptionsOrder,
   FindOptionsOrderValue,
   FindOptionsWhere,
   Repository,
-} from 'typeorm';
-import { Address } from './entities/address.entity';
-import { InjectRepository } from '@nestjs/typeorm';
-import { CreateAddressDto } from './dto/create-address.dto';
-import { Customer } from 'src/customer/entities/customer.entity';
-import { UpdateAddressDto } from './dto/update-address.dto';
-import { formatBrPostalCode } from 'src/common/utils/format-br-postal-code';
-import { trimWhiteSpacesFromDto } from 'src/common/utils/trim-white-spaces-from-dto';
+} from "typeorm";
+import { Address } from "./entities/address.entity";
+import { InjectRepository } from "@nestjs/typeorm";
+import { CreateAddressDto } from "./dto/create-address.dto";
+import { Customer } from "src/customer/entities/customer.entity";
+import { UpdateAddressDto } from "./dto/update-address.dto";
+import { formatBrPostalCode } from "src/common/utils/format-br-postal-code";
+import { trimWhiteSpacesFromDto } from "src/common/utils/trim-white-spaces-from-dto";
+import { DataSource } from "typeorm";
 
 @Injectable()
 export class AddressService {
   constructor(
     @InjectRepository(Address)
     private readonly addressRepository: Repository<Address>,
+    private readonly dataSource: DataSource,
   ) {}
 
   create(dto: CreateAddressDto, isDefault = true, manager?: EntityManager) {
@@ -33,7 +35,7 @@ export class AddressService {
 
   async update(dto: UpdateAddressDto, id: string, manager?: EntityManager) {
     const address = await this.findOneByOrFail({ id }, false, manager);
-    trimWhiteSpacesFromDto(dto, 4, 'number', 'stateCode', 'location');
+    trimWhiteSpacesFromDto(dto, 4, "number", "stateCode", "location");
     address.complement =
       dto.complement !== null ? dto.complement || address.complement : null;
 
@@ -45,7 +47,7 @@ export class AddressService {
     address.location =
       dto.location !== null ? dto.location || address.location : null;
 
-    address.number = dto.number !== null ? dto.number || address.number : 'S/N';
+    address.number = dto.number !== null ? dto.number || address.number : "S/N";
     address.city = dto.city ?? address.city;
     address.neighborhood = dto.neighborhood ?? address.neighborhood;
     address.street = dto.street ?? address.street;
@@ -63,7 +65,7 @@ export class AddressService {
   }
 
   generateAddress(dto: CreateAddressDto, isDefault = true) {
-    trimWhiteSpacesFromDto(dto, 4, 'number', 'stateCode', 'location');
+    trimWhiteSpacesFromDto(dto, 4, "number", "stateCode", "location");
     const address = {
       street: dto.street,
       number: dto.number === null ? undefined : dto.number,
@@ -95,7 +97,7 @@ export class AddressService {
       relations: { customer: { addresses: relations } },
     });
     if (!address) {
-      throw new NotFoundException('Endereço não encontrado');
+      throw new NotFoundException("Endereço não encontrado");
     }
     return address;
   }
@@ -117,7 +119,7 @@ export class AddressService {
     });
 
     if (!address) {
-      throw new NotFoundException('Endereço não encontrado');
+      throw new NotFoundException("Endereço não encontrado");
     }
 
     return address;
@@ -138,23 +140,23 @@ export class AddressService {
     return addresses;
   }
 
-  async remove(id: string, manager?: EntityManager) {
-    const repo = manager
-      ? manager.getRepository(Address)
-      : this.addressRepository;
-    const address = await this.findOneByOrFail({ id }, true, manager);
-    if (address.customer?.addresses.length === 1) {
-      throw new UnprocessableEntityException(
-        'Cliente precisa ter ao menos 1 endereço',
-      );
-    }
-    if (address.isDefault) {
-      throw new ForbiddenException(
-        'Não é possível excluir o endereço que está como padrão',
-      );
-    }
-    await repo.delete({ id });
-    return address;
+  async remove(id: string, extManager?: EntityManager) {
+    return this.dataSource.transaction(async (intManager) => {
+      const manager = extManager ? extManager : intManager;
+      const address = await this.findOneByOrFail({ id }, true, manager);
+      if (address.customer?.addresses.length === 1) {
+        throw new UnprocessableEntityException(
+          "Cliente precisa ter ao menos 1 endereço",
+        );
+      }
+      if (address.isDefault) {
+        throw new ForbiddenException(
+          "Não é possível excluir o endereço que está como padrão",
+        );
+      }
+      await this.addressRepository.delete({ id });
+      return address;
+    });
   }
 
   async save(address: Partial<Address>, manager?: EntityManager) {
