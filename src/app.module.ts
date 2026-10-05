@@ -41,6 +41,7 @@ import { WorkTimeModule } from "./work-time/work-time.module";
       ],
     }),
     TypeOrmModule.forRoot({
+      type: "postgres",
       url: process.env.DATA_BASE_URL,
       ssl: {
         rejectUnauthorized: false,
