@@ -1,6 +1,6 @@
-import { BadRequestException, Injectable, PipeTransform } from '@nestjs/common';
-import { isISO8601 } from 'class-validator';
-import { fromZonedTime } from 'date-fns-tz';
+import { BadRequestException, Injectable, PipeTransform } from "@nestjs/common";
+import { isISO8601 } from "class-validator";
+import { fromZonedTime } from "date-fns-tz";
 
 @Injectable()
 export class ParseTimezoneDatePipe implements PipeTransform {
@@ -10,9 +10,9 @@ export class ParseTimezoneDatePipe implements PipeTransform {
     }
 
     if (!isISO8601(value, { strict: true })) {
-      throw new BadRequestException('Data inválida');
+      throw new BadRequestException("Data inválida");
     }
 
-    return fromZonedTime(value, 'America/Sao_Paulo');
+    return fromZonedTime(value, "America/Sao_Paulo");
   }
 }

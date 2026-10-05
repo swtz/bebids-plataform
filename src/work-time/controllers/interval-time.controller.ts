@@ -9,29 +9,29 @@ import {
   Patch,
   Query,
   Req,
-} from '@nestjs/common';
-import { Roles } from 'src/common/role/decorators/roles.decorator';
-import { Role } from 'src/common/role/roles.enum';
-import { IntervalTimeService } from '../services/interval-time.service';
-import { ResponseIntervalTimeDto } from '../dto/interval-time/response-interval-time.dto';
-import { UpdateIntervalTimeDto } from '../dto/interval-time/update-interval-time.dto';
-import { AuthenticatedRequest } from 'src/auth/types/authenticated-request.type';
-import { IntervalTime } from '../entities/interval-time.entity';
+} from "@nestjs/common";
+import { Roles } from "src/common/role/decorators/roles.decorator";
+import { Role } from "src/common/role/roles.enum";
+import { IntervalTimeService } from "../services/interval-time.service";
+import { ResponseIntervalTimeDto } from "../dto/interval-time/response-interval-time.dto";
+import { UpdateIntervalTimeDto } from "../dto/interval-time/update-interval-time.dto";
+import { AuthenticatedRequest } from "src/auth/types/authenticated-request.type";
+import { IntervalTime } from "../entities/interval-time.entity";
 import {
   CommonType,
   ParseOrderParamsPipe,
-} from 'src/delivery/pipes/parse-order-params.pipe';
-import { intervalTimeOrderMap } from 'src/common/data/entity-instructions/ordering';
-import { FindOptionsOrder, FindOptionsOrderValue } from 'typeorm';
+} from "src/delivery/pipes/parse-order-params.pipe";
+import { intervalTimeOrderMap } from "src/common/data/entity-instructions/ordering";
+import { FindOptionsOrder, FindOptionsOrderValue } from "typeorm";
 
-@Controller('interval-time')
+@Controller("interval-time")
 @Roles(Role.Admin, Role.Operator)
 export class IntervalTimeController {
   constructor(private readonly intervalTimeService: IntervalTimeService) {}
 
-  @Patch(':id')
+  @Patch(":id")
   async update(
-    @Param('id', ParseUUIDPipe) id: string,
+    @Param("id", ParseUUIDPipe) id: string,
     @Body() dto: UpdateIntervalTimeDto,
   ) {
     const intervalTime = await this.intervalTimeService.update(id, dto);
@@ -40,10 +40,10 @@ export class IntervalTimeController {
 
   @Get()
   async findAll(
-    @Query('workTimeId', new ParseUUIDPipe({ optional: true }))
+    @Query("workTimeId", new ParseUUIDPipe({ optional: true }))
     workTimeId: string,
-    @Query('userId', new ParseUUIDPipe({ optional: true })) userId: string,
-    @Query('duration') duration: string,
+    @Query("userId", new ParseUUIDPipe({ optional: true })) userId: string,
+    @Query("duration") duration: string,
     @Query(
       new ParseOrderParamsPipe<CommonType<IntervalTime>>(intervalTimeOrderMap),
     )
@@ -60,20 +60,20 @@ export class IntervalTimeController {
       orderParams,
     );
     const parsedIntervalTimes = intervalTimes.map(
-      item => new ResponseIntervalTimeDto(item),
+      (item) => new ResponseIntervalTimeDto(item),
     );
 
     return parsedIntervalTimes;
   }
 
-  @Get('me')
+  @Get("me")
   async findMy(@Req() req: AuthenticatedRequest) {
     const {
       intervalTime: reqIntervalTime,
     }: { intervalTime: IntervalTime | null } = req.user;
 
     if (!reqIntervalTime) {
-      throw new NotFoundException('Tempo de Intervalo não encontrado');
+      throw new NotFoundException("Tempo de Intervalo não encontrado");
     }
 
     const intervalTime = await this.intervalTimeService.findOneByOrFail({
@@ -83,14 +83,14 @@ export class IntervalTimeController {
     return new ResponseIntervalTimeDto(intervalTime);
   }
 
-  @Get(':id')
-  async findOne(@Param('id', ParseUUIDPipe) id: string) {
+  @Get(":id")
+  async findOne(@Param("id", ParseUUIDPipe) id: string) {
     const intervalTime = await this.intervalTimeService.findOneByOrFail({ id });
     return new ResponseIntervalTimeDto(intervalTime);
   }
 
-  @Delete(':id')
-  async remove(@Param('id', ParseUUIDPipe) id: string) {
+  @Delete(":id")
+  async remove(@Param("id", ParseUUIDPipe) id: string) {
     const intervalTime = await this.intervalTimeService.remove(id);
     return new ResponseIntervalTimeDto(intervalTime);
   }

@@ -3,7 +3,7 @@ import {
   Injectable,
   NotFoundException,
   UnauthorizedException,
-} from '@nestjs/common';
+} from "@nestjs/common";
 import {
   DataSource,
   EntityManager,
@@ -12,24 +12,24 @@ import {
   FindOptionsRelations,
   FindOptionsWhere,
   Repository,
-} from 'typeorm';
-import { User } from '../entities/user.entity';
-import { InjectRepository } from '@nestjs/typeorm';
-import { CreateUserDto } from '../dtos/user/create-user.dto';
-import { HashingService } from 'src/common/hashing/hashing.service';
-import { UpdateUserDto } from '../dtos/user/update-user.dto';
-import { UpdatePasswordDto } from '../dtos/user/update-password.dto';
-import { RoleService } from 'src/common/role/role.service';
-import { Role, Role as RoleEnum } from 'src/common/role/roles.enum';
-import { essencial, full } from '../data/relations/user';
+} from "typeorm";
+import { User } from "../entities/user.entity";
+import { InjectRepository } from "@nestjs/typeorm";
+import { CreateUserDto } from "../dtos/user/create-user.dto";
+import { HashingService } from "src/common/hashing/hashing.service";
+import { UpdateUserDto } from "../dtos/user/update-user.dto";
+import { UpdatePasswordDto } from "../dtos/user/update-password.dto";
+import { RoleService } from "src/common/role/role.service";
+import { Role, Role as RoleEnum } from "src/common/role/roles.enum";
+import { essencial, full } from "../data/relations/user";
 import {
   essencial as mtbEssencial,
   full as mtbFull,
-} from '../data/relations/delivery-man';
-import { setEntityRelationFieldAsNull } from 'src/common/utils/set-entity-relation-field-as-null';
-import { Motorcycle } from '../entities/motorcycle.entity';
-import { WorkTime } from 'src/work-time/entities/work-time.entity';
-import { IntervalTime } from 'src/work-time/entities/interval-time.entity';
+} from "../data/relations/delivery-man";
+import { setEntityRelationFieldAsNull } from "src/common/utils/set-entity-relation-field-as-null";
+import { Motorcycle } from "../entities/motorcycle.entity";
+import { WorkTime } from "src/work-time/entities/work-time.entity";
+import { IntervalTime } from "src/work-time/entities/interval-time.entity";
 @Injectable()
 export class UserService {
   constructor(
@@ -45,7 +45,7 @@ export class UserService {
     const exists = await this.findOneBy({ email });
 
     if (exists) {
-      throw new ConflictException('Email já existe');
+      throw new ConflictException("Email já existe");
     }
   }
 
@@ -54,7 +54,7 @@ export class UserService {
     const exists = await this.findByPhone(phone, isSecondPhone);
 
     if (exists) {
-      throw new ConflictException('Telefone já existe');
+      throw new ConflictException("Telefone já existe");
     }
   }
 
@@ -63,12 +63,12 @@ export class UserService {
     const exists = await this.userRepository.findOneBy({ nickname });
 
     if (exists) {
-      throw new ConflictException('Apelido já existe');
+      throw new ConflictException("Apelido já existe");
     }
   }
 
   async create(dto: CreateUserDto, extManager?: EntityManager) {
-    return this.dataSource.transaction(async srcManager => {
+    return this.dataSource.transaction(async (srcManager) => {
       const manager = extManager ? extManager : srcManager;
       const role = await this.roleService.findOneOrCreate(dto.role, manager);
       const hashedPassword = await this.hashingService.hash(dto.password);
@@ -93,11 +93,11 @@ export class UserService {
 
   async getAllRoleNames(userData: FindOptionsWhere<User>) {
     const user = await this.findOneByOrFail(userData);
-    return user.roles.map(role => role.name);
+    return user.roles.map((role) => role.name);
   }
 
   async update(user: User, dto: UpdateUserDto, extManager?: EntityManager) {
-    return this.dataSource.transaction(async srcManager => {
+    return this.dataSource.transaction(async (srcManager) => {
       const manager = extManager ? extManager : srcManager;
       const { nickname, phone, email, secondPhone, placeCode } = dto;
 
@@ -131,7 +131,7 @@ export class UserService {
     );
 
     if (!validPassword) {
-      throw new UnauthorizedException('Senha atual inválida');
+      throw new UnauthorizedException("Senha atual inválida");
     }
 
     const hashedPassword = await this.hashingService.hash(dto.newPassword);
@@ -165,13 +165,13 @@ export class UserService {
 
   async findOneByOrFail(
     userData: FindOptionsWhere<User>,
-    relations?: 'user-full' | 'motoboy-essencial' | 'motoboy-full',
+    relations?: "user-full" | "motoboy-essencial" | "motoboy-full",
     manager?: EntityManager,
   ) {
     const user = await this.findOneBy(userData, relations, manager);
 
     if (!user) {
-      throw new NotFoundException('Usuário não encontrado');
+      throw new NotFoundException("Usuário não encontrado");
     }
 
     return user;
@@ -179,7 +179,7 @@ export class UserService {
 
   async findOneBy(
     userData: FindOptionsWhere<User>,
-    relations?: 'user-full' | 'motoboy-essencial' | 'motoboy-full',
+    relations?: "user-full" | "motoboy-essencial" | "motoboy-full",
     manager?: EntityManager,
   ) {
     const repo = manager ? manager.getRepository(User) : this.userRepository;
@@ -190,13 +190,13 @@ export class UserService {
 
     if (relations) {
       switch (relations) {
-        case 'motoboy-essencial':
+        case "motoboy-essencial":
           aux.deliveryManFields = mtbEssencial;
           break;
-        case 'motoboy-full':
+        case "motoboy-full":
           aux.deliveryManFields = mtbFull;
           break;
-        case 'user-full':
+        case "user-full":
           aux.userFields = full;
       }
     }
@@ -228,7 +228,7 @@ export class UserService {
   }
 
   async remove(id: string, extManager?: EntityManager) {
-    return this.dataSource.transaction(async intManager => {
+    return this.dataSource.transaction(async (intManager) => {
       const manager = extManager ? extManager : intManager;
       const repo = manager.getRepository(User);
       const repoMc = manager.getRepository(Motorcycle);
@@ -236,7 +236,7 @@ export class UserService {
       const repoIt = manager.getRepository(IntervalTime);
       const user = await this.findOneByOrFail(
         { id },
-        'motoboy-essencial',
+        "motoboy-essencial",
         manager,
       );
       const { workTime: oldWorkTime, intervalTime: oldIntervalTime } = user;
@@ -244,7 +244,7 @@ export class UserService {
       if (user.deliveryMan?.motorcycle?.licensePlate) {
         await setEntityRelationFieldAsNull<Motorcycle>(
           Motorcycle,
-          'driver',
+          "driver",
           user.deliveryMan.motorcycle.id,
           repoMc,
         );

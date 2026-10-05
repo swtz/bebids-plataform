@@ -1,6 +1,6 @@
-import { WorkTime } from '../entities/work-time.entity';
+import { WorkTime } from "../entities/work-time.entity";
 
 export type SmallResponseWorkTime = Pick<
   WorkTime,
-  'id' | 'shift' | 'initHour' | 'endHour' | 'duration' | 'isShared'
+  "id" | "shift" | "initHour" | "endHour" | "duration" | "isShared"
 >;

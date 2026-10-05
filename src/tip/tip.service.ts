@@ -1,8 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { EntityManager, Repository } from 'typeorm';
-import { Tip } from './entities/tip.entity';
-import { InjectRepository } from '@nestjs/typeorm';
-import { DeliveryMan } from 'src/user/entities/delivery-man.entity';
+import { Injectable, NotFoundException } from "@nestjs/common";
+import { EntityManager, Repository } from "typeorm";
+import { Tip } from "./entities/tip.entity";
+import { InjectRepository } from "@nestjs/typeorm";
+import { DeliveryMan } from "src/user/entities/delivery-man.entity";
 
 @Injectable()
 export class TipService {
@@ -27,7 +27,7 @@ export class TipService {
     const tip = await this.findOneBy(tipData, manager);
 
     if (!tip) {
-      throw new NotFoundException('Gorjeta não encontrada');
+      throw new NotFoundException("Gorjeta não encontrada");
     }
 
     return tip;

@@ -1,8 +1,8 @@
-import { Shift } from 'src/common/enums/work-shifts.enum';
-import { WorkTime } from '../../entities/work-time.entity';
-import { SmallResponsePlaceDto } from 'src/place/dto/small-response-place.dto';
-import { SmallResponseUserDto } from 'src/user/dtos/user/small-response-user.dto';
-import { SmallResponseIntervalTimeDto } from '../interval-time/small-response-interval-time.dto';
+import { Shift } from "src/common/enums/work-shifts.enum";
+import { WorkTime } from "../../entities/work-time.entity";
+import { SmallResponsePlaceDto } from "src/place/dto/small-response-place.dto";
+import { SmallResponseUserDto } from "src/user/dtos/user/small-response-user.dto";
+import { SmallResponseIntervalTimeDto } from "../interval-time/small-response-interval-time.dto";
 
 export class ResponseWorkTimeDto {
   readonly id: string;
@@ -30,19 +30,19 @@ export class ResponseWorkTimeDto {
     this.isShared = workTime.isShared;
     this.places =
       workTime.places && workTime.places.length > 0
-        ? workTime.places.map(place => {
+        ? workTime.places.map((place) => {
             return new SmallResponsePlaceDto(place);
           })
         : null;
     this.users =
       workTime.users && workTime.users.length > 0
-        ? workTime.users.map(user => {
+        ? workTime.users.map((user) => {
             return new SmallResponseUserDto(user);
           })
         : null;
     this.intervalTimes =
       workTime.intervalTimes && workTime.intervalTimes.length > 0
-        ? workTime.intervalTimes.map(intervalTime => {
+        ? workTime.intervalTimes.map((intervalTime) => {
             return new SmallResponseIntervalTimeDto(intervalTime);
           })
         : null;

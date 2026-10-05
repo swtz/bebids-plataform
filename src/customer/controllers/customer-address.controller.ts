@@ -8,31 +8,31 @@ import {
   Patch,
   Post,
   Query,
-} from '@nestjs/common';
-import { CustomerService } from '../services/customer.service';
-import { ResponseAddressDto } from 'src/address/dto/response-address.dto';
-import { CreateAddressDto } from 'src/address/dto/create-address.dto';
-import { ResponseCustomerDto } from '../dto/response-customer.dto';
-import { CreateCustomerDto } from '../dto/create-customer.dto';
-import { CustomerAddressService } from '../services/customer-address.service';
-import { UpdateCustomerDto } from '../dto/update-customer.dto';
-import { CustomerFieldsValidationService } from '../services/customer-fields-validation.service';
-import { ParseBrPhonePipe } from 'src/user/pipes/format-br-phone.pipe';
-import { Roles } from 'src/common/role/decorators/roles.decorator';
-import { Role } from 'src/common/role/roles.enum';
-import { validateFindOneParamsOrFail } from 'src/common/utils/validate-find-one-params-or-fail';
-import { Customer } from '../entities/customer.entity';
-import { formatPhone } from 'src/common/utils/format-phone';
-import { ParseEmailPipe } from 'src/user/pipes/format-email.pipe';
+} from "@nestjs/common";
+import { CustomerService } from "../services/customer.service";
+import { ResponseAddressDto } from "src/address/dto/response-address.dto";
+import { CreateAddressDto } from "src/address/dto/create-address.dto";
+import { ResponseCustomerDto } from "../dto/response-customer.dto";
+import { CreateCustomerDto } from "../dto/create-customer.dto";
+import { CustomerAddressService } from "../services/customer-address.service";
+import { UpdateCustomerDto } from "../dto/update-customer.dto";
+import { CustomerFieldsValidationService } from "../services/customer-fields-validation.service";
+import { ParseBrPhonePipe } from "src/user/pipes/format-br-phone.pipe";
+import { Roles } from "src/common/role/decorators/roles.decorator";
+import { Role } from "src/common/role/roles.enum";
+import { validateFindOneParamsOrFail } from "src/common/utils/validate-find-one-params-or-fail";
+import { Customer } from "../entities/customer.entity";
+import { formatPhone } from "src/common/utils/format-phone";
+import { ParseEmailPipe } from "src/user/pipes/format-email.pipe";
 import {
   CommonType,
   ParseOrderParamsPipe,
-} from 'src/delivery/pipes/parse-order-params.pipe';
-import { FindOptionsOrder, FindOptionsOrderValue } from 'typeorm';
-import { customerOrderMap } from 'src/common/data/entity-instructions/ordering';
+} from "src/delivery/pipes/parse-order-params.pipe";
+import { FindOptionsOrder, FindOptionsOrderValue } from "typeorm";
+import { customerOrderMap } from "src/common/data/entity-instructions/ordering";
 
 @Roles(Role.Admin, Role.Operator)
-@Controller('customer')
+@Controller("customer")
 export class CustomerAddressController {
   constructor(
     private readonly customerService: CustomerService,
@@ -42,8 +42,8 @@ export class CustomerAddressController {
 
   @Post()
   async create(
-    @Body('customer') customerDto: CreateCustomerDto,
-    @Body('address') addressDto: CreateAddressDto,
+    @Body("customer") customerDto: CreateCustomerDto,
+    @Body("address") addressDto: CreateAddressDto,
   ) {
     const { phone, secondPhone } = customerDto;
     await this.customerFieldsValidationService.validateUniqueFields({
@@ -58,11 +58,11 @@ export class CustomerAddressController {
     return new ResponseCustomerDto(customerWithAddress);
   }
 
-  @Patch(':id')
+  @Patch(":id")
   async update(
-    @Param('id', ParseUUIDPipe) id: string,
-    @Body('phone', ParseBrPhonePipe) phone: string,
-    @Body('secondPhone', ParseBrPhonePipe) secondPhone: string,
+    @Param("id", ParseUUIDPipe) id: string,
+    @Body("phone", ParseBrPhonePipe) phone: string,
+    @Body("secondPhone", ParseBrPhonePipe) secondPhone: string,
     @Body() dto: UpdateCustomerDto,
   ) {
     await this.customerFieldsValidationService.validateUniqueFields({
@@ -83,20 +83,20 @@ export class CustomerAddressController {
   ) {
     const customers = await this.customerService.findAll(orderParams);
     const parsedCustomers = customers.map(
-      customer => new ResponseCustomerDto(customer),
+      (customer) => new ResponseCustomerDto(customer),
     );
     return parsedCustomers;
   }
 
-  @Get('find')
+  @Get("find")
   async findOneBy(
-    @Query('id', new ParseUUIDPipe({ optional: true })) id: string,
-    @Query('nickname') nickname: string,
-    @Query('name') name: string,
-    @Query('lastName') lastName: string,
-    @Query('email', ParseEmailPipe) email: string,
-    @Query('phone', ParseBrPhonePipe) phone: string,
-    @Query('secondPhone', ParseBrPhonePipe) secondPhone: string,
+    @Query("id", new ParseUUIDPipe({ optional: true })) id: string,
+    @Query("nickname") nickname: string,
+    @Query("name") name: string,
+    @Query("lastName") lastName: string,
+    @Query("email", ParseEmailPipe) email: string,
+    @Query("phone", ParseBrPhonePipe) phone: string,
+    @Query("secondPhone", ParseBrPhonePipe) secondPhone: string,
   ) {
     const customerData = {
       id,
@@ -116,23 +116,23 @@ export class CustomerAddressController {
   }
 
   @Roles(Role.Admin)
-  @Delete(':id')
-  async remove(@Param('id', ParseUUIDPipe) id: string) {
+  @Delete(":id")
+  async remove(@Param("id", ParseUUIDPipe) id: string) {
     const customer = await this.customerService.remove(id);
     return new ResponseCustomerDto(customer);
   }
 
-  @Post(':id/address')
+  @Post(":id/address")
   async addAddress(
     @Body() dto: CreateAddressDto,
-    @Param('id', ParseUUIDPipe) id: string,
+    @Param("id", ParseUUIDPipe) id: string,
   ) {
     const customer = await this.customerAddressService.addAddress(dto, id);
     return new ResponseCustomerDto(customer);
   }
 
-  @Delete('address/:id')
-  async removeAddress(@Param('id', ParseUUIDPipe) id: string) {
+  @Delete("address/:id")
+  async removeAddress(@Param("id", ParseUUIDPipe) id: string) {
     const address = await this.customerAddressService.removeAddress(id);
     return new ResponseAddressDto(address);
   }

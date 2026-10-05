@@ -1,5 +1,5 @@
-import { WeekDay } from 'src/common/enums/weekDays.enum';
-import { User } from 'src/user/entities/user.entity';
+import { WeekDay } from "src/common/enums/weekDays.enum";
+import { User } from "src/user/entities/user.entity";
 
 export type ResponsePreviewSettlement = {
   weekDay: WeekDay;

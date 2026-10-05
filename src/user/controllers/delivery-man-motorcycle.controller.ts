@@ -9,32 +9,32 @@ import {
   Post,
   Query,
   Req,
-} from '@nestjs/common';
-import { DeliveryManMotorcycleService } from '../services/delivery-man-motorcycle.service';
-import { Roles } from 'src/common/role/decorators/roles.decorator';
-import { Role } from 'src/common/role/roles.enum';
-import { CreateUserDto } from '../dtos/user/create-user.dto';
-import { CreateMotorcycleDto } from '../dtos/motorcycle/create-motorcycle.dto';
-import { CreateDeliveryManDto } from '../dtos/delivery-man/create-delivery-man.dto';
-import { UserFieldsValidationService } from '../services/user-fields-validation.service';
-import { UpdateMotorcycleDto } from '../dtos/motorcycle/update-motorcycle.dto';
-import { DeliveryManService } from '../services/delivery-man.service';
-import { ResponseDeliveryManDto } from '../dtos/delivery-man/response-delivery-man.dto';
-import { ResponseUserDto } from '../dtos/user/response-user.dto';
-import { AuthenticatedRequest } from 'src/auth/types/authenticated-request.type';
-import { formatPhone } from 'src/common/utils/format-phone';
-import { ParsePlaceCodePipe } from 'src/place/pipes/parse-place-code.pipe';
-import { ResponseMotorcycleDto } from '../dtos/motorcycle/response-motorcycle.dto';
+} from "@nestjs/common";
+import { DeliveryManMotorcycleService } from "../services/delivery-man-motorcycle.service";
+import { Roles } from "src/common/role/decorators/roles.decorator";
+import { Role } from "src/common/role/roles.enum";
+import { CreateUserDto } from "../dtos/user/create-user.dto";
+import { CreateMotorcycleDto } from "../dtos/motorcycle/create-motorcycle.dto";
+import { CreateDeliveryManDto } from "../dtos/delivery-man/create-delivery-man.dto";
+import { UserFieldsValidationService } from "../services/user-fields-validation.service";
+import { UpdateMotorcycleDto } from "../dtos/motorcycle/update-motorcycle.dto";
+import { DeliveryManService } from "../services/delivery-man.service";
+import { ResponseDeliveryManDto } from "../dtos/delivery-man/response-delivery-man.dto";
+import { ResponseUserDto } from "../dtos/user/response-user.dto";
+import { AuthenticatedRequest } from "src/auth/types/authenticated-request.type";
+import { formatPhone } from "src/common/utils/format-phone";
+import { ParsePlaceCodePipe } from "src/place/pipes/parse-place-code.pipe";
+import { ResponseMotorcycleDto } from "../dtos/motorcycle/response-motorcycle.dto";
 import {
   CommonType,
   ParseOrderParamsPipe,
-} from 'src/delivery/pipes/parse-order-params.pipe';
-import { DeliveryMan } from '../entities/delivery-man.entity';
-import { FindOptionsOrder, FindOptionsOrderValue } from 'typeorm';
-import { deliveryManOrderMap } from 'src/common/data/entity-instructions/ordering';
+} from "src/delivery/pipes/parse-order-params.pipe";
+import { DeliveryMan } from "../entities/delivery-man.entity";
+import { FindOptionsOrder, FindOptionsOrderValue } from "typeorm";
+import { deliveryManOrderMap } from "src/common/data/entity-instructions/ordering";
 
 @Roles(Role.Admin)
-@Controller('motoboy')
+@Controller("motoboy")
 export class DeliveryManMotorcycleController {
   constructor(
     private readonly deliveryManMotorcycleService: DeliveryManMotorcycleService,
@@ -44,11 +44,11 @@ export class DeliveryManMotorcycleController {
 
   @Post()
   async create(
-    @Body('user', ParsePlaceCodePipe)
+    @Body("user", ParsePlaceCodePipe)
     userDto: CreateUserDto,
-    @Body('motorcycle', ParsePlaceCodePipe)
+    @Body("motorcycle", ParsePlaceCodePipe)
     motorcycleDto: CreateMotorcycleDto,
-    @Body('deliveryMan') deliveryManDto: CreateDeliveryManDto,
+    @Body("deliveryMan") deliveryManDto: CreateDeliveryManDto,
   ) {
     const parsedUserDto: CreateUserDto = {
       ...userDto,
@@ -66,12 +66,12 @@ export class DeliveryManMotorcycleController {
     return new ResponseUserDto(deliveryMan);
   }
 
-  @Post(':id')
+  @Post(":id")
   async createUsingMotorcycleId(
-    @Param('id', ParseUUIDPipe) motorcycleId: string,
-    @Body('user', ParsePlaceCodePipe)
+    @Param("id", ParseUUIDPipe) motorcycleId: string,
+    @Body("user", ParsePlaceCodePipe)
     userDto: CreateUserDto,
-    @Body('deliveryMan') deliveryManDto: CreateDeliveryManDto,
+    @Body("deliveryMan") deliveryManDto: CreateDeliveryManDto,
   ) {
     const parsedUserDto: CreateUserDto = {
       ...userDto,
@@ -92,8 +92,8 @@ export class DeliveryManMotorcycleController {
   @Roles(Role.Admin, Role.Operator)
   @Get()
   async findAll(
-    @Query('daily') daily: string,
-    @Query('placeCode', ParsePlaceCodePipe) placeCode: string,
+    @Query("daily") daily: string,
+    @Query("placeCode", ParsePlaceCodePipe) placeCode: string,
     @Query(
       new ParseOrderParamsPipe<CommonType<DeliveryMan>>(deliveryManOrderMap),
     )
@@ -107,14 +107,14 @@ export class DeliveryManMotorcycleController {
       orderParams,
     );
     const parsedDeliveryMen = deliveryMen.map(
-      item => new ResponseDeliveryManDto(item),
+      (item) => new ResponseDeliveryManDto(item),
     );
     return parsedDeliveryMen;
   }
 
   @Roles(Role.Admin, Role.Operator)
-  @Get(':id')
-  async findOne(@Param('id', ParseUUIDPipe) id: string) {
+  @Get(":id")
+  async findOne(@Param("id", ParseUUIDPipe) id: string) {
     const deliveryMan = await this.deliveryManService.findOneByOrFail(
       { user: { id } },
       true,
@@ -123,9 +123,9 @@ export class DeliveryManMotorcycleController {
   }
 
   @Roles(Role.Motoboy)
-  @Patch('me/motorcycle')
+  @Patch("me/motorcycle")
   async updateMe(
-    @Body('motorcycle') motorcycleDto: UpdateMotorcycleDto,
+    @Body("motorcycle") motorcycleDto: UpdateMotorcycleDto,
     @Req() req: AuthenticatedRequest,
   ) {
     const deliveryMan = await this.deliveryManMotorcycleService.update(
@@ -135,10 +135,10 @@ export class DeliveryManMotorcycleController {
     return new ResponseDeliveryManDto(deliveryMan);
   }
 
-  @Patch('motorcycle/restrict/:id')
+  @Patch("motorcycle/restrict/:id")
   async updateRestrictMotorcycle(
-    @Param('id', ParseUUIDPipe) id: string,
-    @Body('motorcycle', ParsePlaceCodePipe)
+    @Param("id", ParseUUIDPipe) id: string,
+    @Body("motorcycle", ParsePlaceCodePipe)
     motorcycleDto: UpdateMotorcycleDto,
   ) {
     const motorcycle =
@@ -149,11 +149,11 @@ export class DeliveryManMotorcycleController {
     return new ResponseMotorcycleDto(motorcycle);
   }
 
-  @Patch(':id')
+  @Patch(":id")
   async update(
-    @Param('id', ParseUUIDPipe) id: string,
-    @Body('motorcycle') motorcycleDto: UpdateMotorcycleDto,
-    @Body('daily', new ParseFloatPipe({ optional: true })) daily: number,
+    @Param("id", ParseUUIDPipe) id: string,
+    @Body("motorcycle") motorcycleDto: UpdateMotorcycleDto,
+    @Body("daily", new ParseFloatPipe({ optional: true })) daily: number,
   ) {
     const deliveryMan = await this.deliveryManMotorcycleService.update(
       id,

@@ -1,16 +1,16 @@
-import { Address } from 'src/address/entities/address.entity';
-import { Customer } from 'src/customer/entities/customer.entity';
-import { Delivery } from 'src/delivery/entities/delivery.entity';
-import { Payout } from 'src/payout/entities/payout.entity';
-import { Place } from 'src/place/entities/place.entity';
-import { Settlement } from 'src/settlement/entities/settlement.entity';
-import { DeliveryMan } from 'src/user/entities/delivery-man.entity';
-import { Motorcycle } from 'src/user/entities/motorcycle.entity';
-import { User } from 'src/user/entities/user.entity';
-import { Voucher } from 'src/voucher/entities/voucher.entity';
-import { IntervalTime } from 'src/work-time/entities/interval-time.entity';
-import { WorkTime } from 'src/work-time/entities/work-time.entity';
-import { FindOptionsOrder, FindOptionsOrderValue } from 'typeorm';
+import { Address } from "src/address/entities/address.entity";
+import { Customer } from "src/customer/entities/customer.entity";
+import { Delivery } from "src/delivery/entities/delivery.entity";
+import { Payout } from "src/payout/entities/payout.entity";
+import { Place } from "src/place/entities/place.entity";
+import { Settlement } from "src/settlement/entities/settlement.entity";
+import { DeliveryMan } from "src/user/entities/delivery-man.entity";
+import { Motorcycle } from "src/user/entities/motorcycle.entity";
+import { User } from "src/user/entities/user.entity";
+import { Voucher } from "src/voucher/entities/voucher.entity";
+import { IntervalTime } from "src/work-time/entities/interval-time.entity";
+import { WorkTime } from "src/work-time/entities/work-time.entity";
+import { FindOptionsOrder, FindOptionsOrderValue } from "typeorm";
 
 export function generateOrderingMap<T>(orderParams: {
   [K in keyof FindOptionsOrder<T>]: FindOptionsOrderValue;
@@ -20,7 +20,7 @@ export function generateOrderingMap<T>(orderParams: {
 
 export const commonOrderMap = generateOrderingMap<User>({
   id: undefined,
-  createdAt: 'DESC',
+  createdAt: "DESC",
   updatedAt: undefined,
 });
 

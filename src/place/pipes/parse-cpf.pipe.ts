@@ -3,12 +3,12 @@ import {
   BadRequestException,
   Injectable,
   PipeTransform,
-} from '@nestjs/common';
-import { formatCpf, validateCpf } from 'src/common/utils/format-cpf';
+} from "@nestjs/common";
+import { formatCpf, validateCpf } from "src/common/utils/format-cpf";
 
 @Injectable()
 export class ParseCpfPipe implements PipeTransform {
-  private readonly paramTypes = ['body', 'query'];
+  private readonly paramTypes = ["body", "query"];
 
   transform(value: string, { type }: ArgumentMetadata) {
     if (!value || !this.paramTypes.includes(type)) {
@@ -16,7 +16,7 @@ export class ParseCpfPipe implements PipeTransform {
     }
     const cpf = formatCpf(value);
     if (!validateCpf(cpf)) {
-      throw new BadRequestException('CPF inválido');
+      throw new BadRequestException("CPF inválido");
     }
 
     return cpf;

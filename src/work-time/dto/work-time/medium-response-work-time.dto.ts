@@ -1,5 +1,5 @@
-import { Shift } from 'src/common/enums/work-shifts.enum';
-import { WorkTime } from 'src/work-time/entities/work-time.entity';
+import { Shift } from "src/common/enums/work-shifts.enum";
+import { WorkTime } from "src/work-time/entities/work-time.entity";
 
 export class MediumResponseWorkTimeDto {
   readonly id: string;

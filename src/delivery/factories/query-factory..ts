@@ -1,10 +1,10 @@
-import { Customer } from 'src/customer/entities/customer.entity';
-import { User } from 'src/user/entities/user.entity';
-import { Between, FindOperator, FindOptionsWhere } from 'typeorm';
-import { PaymentMethod } from '../entities/payment-method.entity';
-import { PaymentMethod as PaymentMethodEnum } from '../enums/payment-methods.enum';
-import { Role } from 'src/common/role/roles.enum';
-import { DeliveryMan } from 'src/user/entities/delivery-man.entity';
+import { Customer } from "src/customer/entities/customer.entity";
+import { User } from "src/user/entities/user.entity";
+import { Between, FindOperator, FindOptionsWhere } from "typeorm";
+import { PaymentMethod } from "../entities/payment-method.entity";
+import { PaymentMethod as PaymentMethodEnum } from "../enums/payment-methods.enum";
+import { Role } from "src/common/role/roles.enum";
+import { DeliveryMan } from "src/user/entities/delivery-man.entity";
 
 interface Query {
   isPaid?: boolean;
@@ -87,9 +87,9 @@ export class DeliveryFindAllFactory extends AbstractFactory {
     }
 
     if (type === Role.Motoboy) {
-      queryObject['motoboy'] = { user: data };
+      queryObject["motoboy"] = { user: data };
     } else {
-      const key = type === Role.Admin ? 'operator' : type;
+      const key = type === Role.Admin ? "operator" : type;
       queryObject[key] = data;
     }
 

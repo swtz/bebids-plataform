@@ -3,12 +3,12 @@ import {
   BadRequestException,
   Injectable,
   PipeTransform,
-} from '@nestjs/common';
-import { isEmail } from 'class-validator';
+} from "@nestjs/common";
+import { isEmail } from "class-validator";
 
 @Injectable()
 export class ParseEmailPipe implements PipeTransform {
-  private readonly paramTypes = ['body', 'query'];
+  private readonly paramTypes = ["body", "query"];
 
   transform(value: string, { type }: ArgumentMetadata) {
     if (!value || !this.paramTypes.includes(type)) {
@@ -16,7 +16,7 @@ export class ParseEmailPipe implements PipeTransform {
     }
 
     if (!isEmail(value)) {
-      throw new BadRequestException('Email inválido');
+      throw new BadRequestException("Email inválido");
     }
 
     return value;

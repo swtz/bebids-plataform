@@ -1,5 +1,5 @@
-import { WeekDay, weekDays } from 'src/common/enums/weekDays.enum';
-import { User } from 'src/user/entities/user.entity';
+import { WeekDay, weekDays } from "src/common/enums/weekDays.enum";
+import { User } from "src/user/entities/user.entity";
 import {
   Column,
   CreateDateColumn,
@@ -7,41 +7,41 @@ import {
   ManyToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
-} from 'typeorm';
+} from "typeorm";
 
 @Entity()
 export class Settlement {
-  @PrimaryGeneratedColumn('uuid')
+  @PrimaryGeneratedColumn("uuid")
   id!: string;
 
-  @Column('float')
+  @Column("float")
   initValue!: number;
 
   @Column()
   quantityDeliveries!: number;
 
-  @Column('float')
+  @Column("float")
   totalRemainingMotoboy!: number;
 
-  @Column('float')
+  @Column("float")
   moneySubtotal!: number;
 
-  @Column('float')
+  @Column("float")
   cardSubtotal!: number;
 
-  @Column('float')
+  @Column("float")
   pixSubtotal!: number;
 
-  @Column('float')
+  @Column("float")
   subtotal!: number;
 
-  @Column({ type: 'varchar', nullable: true })
+  @Column({ type: "varchar", nullable: true })
   description!: string | null;
 
-  @Column('float')
+  @Column("float")
   currentTotal!: number;
 
-  @Column('float')
+  @Column("float")
   expectedTotal!: number;
 
   @CreateDateColumn()
@@ -59,7 +59,7 @@ export class Settlement {
   @Column({ default: false })
   isClosed!: boolean;
 
-  @Column({ type: 'timestamp', nullable: true })
+  @Column({ type: "timestamp", nullable: true })
   closingAt!: Date | null;
 
   @Column()
@@ -67,8 +67,8 @@ export class Settlement {
 
   @ManyToOne(() => User, {
     nullable: false,
-    onDelete: 'CASCADE',
-    onUpdate: 'CASCADE',
+    onDelete: "CASCADE",
+    onUpdate: "CASCADE",
   })
   operator!: User;
 }

@@ -1,5 +1,5 @@
-import { Payout } from 'src/payout/entities/payout.entity';
-import { User } from 'src/user/entities/user.entity';
+import { Payout } from "src/payout/entities/payout.entity";
+import { User } from "src/user/entities/user.entity";
 import {
   Column,
   CreateDateColumn,
@@ -7,14 +7,14 @@ import {
   ManyToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
-} from 'typeorm';
+} from "typeorm";
 
 @Entity()
 export class Voucher {
-  @PrimaryGeneratedColumn('uuid')
+  @PrimaryGeneratedColumn("uuid")
   id!: string;
 
-  @Column('float')
+  @Column("float")
   amount!: number;
 
   @Column({ nullable: true })
@@ -26,24 +26,24 @@ export class Voucher {
   @UpdateDateColumn()
   updatedAt!: Date;
 
-  @ManyToOne(() => User, user => user.vouchers, {
+  @ManyToOne(() => User, (user) => user.vouchers, {
     nullable: false,
-    onDelete: 'CASCADE',
-    onUpdate: 'CASCADE',
+    onDelete: "CASCADE",
+    onUpdate: "CASCADE",
   })
   user!: User;
 
   @ManyToOne(() => User, {
     nullable: true,
-    onDelete: 'SET NULL',
-    onUpdate: 'SET NULL',
+    onDelete: "SET NULL",
+    onUpdate: "SET NULL",
   })
   createdBy!: User | null;
 
-  @ManyToOne(() => Payout, payout => payout.vouchers, {
+  @ManyToOne(() => Payout, (payout) => payout.vouchers, {
     nullable: true,
-    onDelete: 'SET NULL',
-    onUpdate: 'SET NULL',
+    onDelete: "SET NULL",
+    onUpdate: "SET NULL",
   })
   payout!: Payout | null;
 }

@@ -1,5 +1,5 @@
-import { ResponseAddressDto } from 'src/address/dto/response-address.dto';
-import { Customer } from '../entities/customer.entity';
+import { ResponseAddressDto } from "src/address/dto/response-address.dto";
+import { Customer } from "../entities/customer.entity";
 
 export class ResponseCustomerDto {
   readonly id: string;
@@ -21,7 +21,7 @@ export class ResponseCustomerDto {
     this.email = customer.email;
     this.addresses =
       customer.addresses?.length > 0
-        ? customer.addresses.map(address => {
+        ? customer.addresses.map((address) => {
             return new ResponseAddressDto(address);
           })
         : null;

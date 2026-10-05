@@ -1,6 +1,6 @@
-import { BadRequestException } from '@nestjs/common';
-import { parse } from 'date-fns';
-import { fromZonedTime, toZonedTime } from 'date-fns-tz';
+import { BadRequestException } from "@nestjs/common";
+import { parse } from "date-fns";
+import { fromZonedTime, toZonedTime } from "date-fns-tz";
 
 export function parseBrDate(hour: number, shortDate?: string | Date) {
   // objetivo dessa função:
@@ -9,26 +9,26 @@ export function parseBrDate(hour: number, shortDate?: string | Date) {
   // shortDate é sempre uma data com deslocamento 180? (Data BR)
   // Quando não passo shortDate, o que acontece em termos de algoritmo?
   const userDate =
-    typeof shortDate === 'string'
-      ? parse(`${shortDate} ${hour}`, 'dd/MM/yyyy H', new Date())
+    typeof shortDate === "string"
+      ? parse(`${shortDate} ${hour}`, "dd/MM/yyyy H", new Date())
       : new Date();
 
-  const timezoneDate = toZonedTime(userDate, 'America/Sao_Paulo');
+  const timezoneDate = toZonedTime(userDate, "America/Sao_Paulo");
 
   timezoneDate.setHours(hour);
 
-  const date = fromZonedTime(timezoneDate, 'America/Sao_Paulo');
-  const dateString = date.toLocaleString('BR', { dateStyle: 'short' });
+  const date = fromZonedTime(timezoneDate, "America/Sao_Paulo");
+  const dateString = date.toLocaleString("BR", { dateStyle: "short" });
 
   const parsedUTCDate = parse(
     `${dateString} ${date.getHours()}`,
-    'dd/MM/yyyy H',
+    "dd/MM/yyyy H",
     new Date(),
   );
   const isInvalidYear = parsedUTCDate.getFullYear().toString(10).length < 4;
 
   if (!parsedUTCDate.valueOf() || isInvalidYear) {
-    throw new BadRequestException('Data inválida');
+    throw new BadRequestException("Data inválida");
   }
 
   return parsedUTCDate;

@@ -1,7 +1,7 @@
-import { PipeTransform } from '@nestjs/common';
-import { commonOrderMap } from 'src/common/data/entity-instructions/ordering';
-import { User } from 'src/user/entities/user.entity';
-import { FindOptionsOrder, FindOptionsOrderValue } from 'typeorm';
+import { PipeTransform } from "@nestjs/common";
+import { commonOrderMap } from "src/common/data/entity-instructions/ordering";
+import { User } from "src/user/entities/user.entity";
+import { FindOptionsOrder, FindOptionsOrderValue } from "typeorm";
 
 export type CommonType<T> = {
   [K in keyof FindOptionsOrder<T>]: FindOptionsOrderValue;
@@ -21,8 +21,8 @@ export class ParseOrderParamsPipe<
   transform(value: CommonType<T>) {
     if (
       !value ||
-      typeof value['field'] !== 'string' ||
-      typeof value['order'] !== 'string'
+      typeof value["field"] !== "string" ||
+      typeof value["order"] !== "string"
     ) {
       return commonOrderMap;
     }
@@ -31,11 +31,11 @@ export class ParseOrderParamsPipe<
       ...this.properties,
       ...this.commonProperties,
     };
-    const field = value['field'];
-    const order = value['order'];
+    const field = value["field"];
+    const order = value["order"];
     const fieldKeys = Object.keys(object);
     const isValidField = fieldKeys.includes(field);
-    const isValidOrder = ['asc', 'ASC', 'desc', 'DESC'].includes(order);
+    const isValidOrder = ["asc", "ASC", "desc", "DESC"].includes(order);
     if (isValidField && isValidOrder) {
       return { [field]: order };
     }
