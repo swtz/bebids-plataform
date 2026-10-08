@@ -143,6 +143,8 @@ export class SettlementService {
             settlement.totalRemainingMotoboy -= 0;
             settlement.currentTotal += delivery.totalPurchase;
           }
+        } else if (delivery.isPaid) {
+          settlement.currentTotal += delivery.totalPurchase;
         }
       });
     }
