@@ -113,11 +113,33 @@ export class UserController {
     @Body("secondPhone", ParseBrPhonePipe) secondPhone: string,
     @Body("placeCode", ParsePlaceCodePipe) placeCode: string,
   ) {
-    await this.userFieldsValidationService.validateUniqueFields({
-      ...dto,
-      phone,
-      secondPhone,
-    });
+    const {
+      nickname,
+      email,
+      phone: userPhone,
+      secondPhone: userSecondPhone,
+    } = await this.userService.findOneByOrFail({ id: req.user.id }, undefined);
+
+    if (dto.phone && dto.phone !== userPhone) {
+      await this.userFieldsValidationService.validateUniqueFields({
+        phone: dto.phone,
+      });
+    }
+    if (dto.secondPhone && dto.secondPhone !== userSecondPhone) {
+      await this.userFieldsValidationService.validateUniqueFields({
+        secondPhone: dto.secondPhone,
+      });
+    }
+    if (dto.nickname && dto.nickname !== nickname) {
+      await this.userFieldsValidationService.validateUniqueFields({
+        nickname: dto.nickname,
+      });
+    }
+    if (dto.email && dto.email !== email) {
+      await this.userFieldsValidationService.validateUniqueFields({
+        email: dto.email,
+      });
+    }
 
     const user = await this.userService.update(req.user, {
       ...dto,
@@ -140,11 +162,33 @@ export class UserController {
   ) {
     const user = await this.userService.findOneByOrFail({ id });
 
-    await this.userFieldsValidationService.validateUniqueFields({
-      ...dto,
-      phone,
-      secondPhone,
-    });
+    const {
+      phone: userPhone,
+      secondPhone: userSecondPhone,
+      nickname,
+      email,
+    } = user;
+
+    if (phone && phone !== userPhone) {
+      await this.userFieldsValidationService.validateUniqueFields({
+        phone,
+      });
+    }
+    if (secondPhone && secondPhone !== userSecondPhone) {
+      await this.userFieldsValidationService.validateUniqueFields({
+        secondPhone,
+      });
+    }
+    if (dto.nickname && dto.nickname !== nickname) {
+      await this.userFieldsValidationService.validateUniqueFields({
+        nickname: dto.nickname,
+      });
+    }
+    if (dto.email && dto.email !== email) {
+      await this.userFieldsValidationService.validateUniqueFields({
+        email: dto.email,
+      });
+    }
 
     const updated = await this.userService.update(user, {
       ...dto,
