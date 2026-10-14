@@ -65,13 +65,38 @@ export class CustomerAddressController {
     @Body("secondPhone", ParseBrPhonePipe) secondPhone: string,
     @Body() dto: UpdateCustomerDto,
   ) {
-    await this.customerFieldsValidationService.validateUniqueFields({
-      ...dto,
-      phone,
-      secondPhone,
-    });
-    const customer = await this.customerService.update(dto, id);
-    return new ResponseCustomerDto(customer);
+    const customer = await this.customerService.findOneByOrFail({ id });
+
+    const {
+      phone: customerPhone,
+      secondPhone: customerSecondPhone,
+      nickname,
+      email,
+    } = customer;
+
+    if (phone && phone !== customerPhone) {
+      await this.customerFieldsValidationService.validateUniqueFields({
+        phone,
+      });
+    }
+    if (secondPhone && secondPhone !== customerSecondPhone) {
+      await this.customerFieldsValidationService.validateUniqueFields({
+        secondPhone,
+      });
+    }
+    if (dto.nickname && dto.nickname !== nickname) {
+      await this.customerFieldsValidationService.validateUniqueFields({
+        nickname: dto.nickname,
+      });
+    }
+    if (dto.email && dto.email !== email) {
+      await this.customerFieldsValidationService.validateUniqueFields({
+        email: dto.email,
+      });
+    }
+
+    const updated = await this.customerService.update(dto, id);
+    return new ResponseCustomerDto(updated);
   }
 
   @Get()

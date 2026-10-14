@@ -283,9 +283,11 @@ export class DeliveryService {
       user,
       user.id,
     );
-    const queryObject = isLoggedUserMotoboy
-      ? { motoboy: { id: user.id } }
-      : { operator: { id: user.id } };
+
+    const queryObject =
+      isLoggedUserMotoboy && user.deliveryMan !== null
+        ? { motoboy: { id: user.deliveryMan.id } }
+        : { operator: { id: user.id } };
 
     const deliveries = await this.deliveryRepository.find({
       where: queryObject,
